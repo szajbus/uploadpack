@@ -1,0 +1,268 @@
+h1. UploadPack
+
+UploadPack is a set of classes that makes file uploads in CakePHP as easy as possible. It works with almost no configuration, but if you need more flexibility you can easily override default settings.
+
+What's included:
+
+* UploadBehavior
+
+  Attach it to your model, it will detect any uploaded file and save it to disk. It can even automatically generate thumbnails of uploaded images.
+  
+* UploadHelper
+
+  Use it in your views to display uploaded images or links to files in general.
+
+h2. Usage
+
+Look at an example.
+
+Scenario: Let users upload their avatars and then display them in two styles - original size and thumbnail.
+
+Solution:
+
+We'll need User model with avatar_file_name field.
+
+<pre>
+  CREATE table users (
+    id int(10) unsigned NOT NULL auto_increment,
+    login varchar(20) NOT NULL,
+    avatar_file_name varchar(255)    
+  );
+</pre>
+
+Attach UploadBehavior to User model and set it up to handle avatars.
+
+<pre>
+  class User extends AppModel {
+    var $name = 'User';
+    var $actsAs = array(
+      'Upload' => array(
+        'avatar' => array(
+          'styles' => array(
+            'thumb' => '80x80'
+          )
+        )
+      )
+    );
+  }
+</pre>
+
+That's all we need to do with our model. We defined one thumbnail style named 'thumb' which means that uploaded image's thumnbnail of 80x80 pixels size will be generated and saved to disk together with original image.
+
+We didn't touch any other configuration settings so files will be saved as webroot/upload/:model/:id/:basename_:style.:extension (with :keys appropriately substituted at run time). Make sure that webroot/upload/users folder is writeable.
+
+Let's upload a file now. We need to add a file field to a standard "create user" form. Note that we omit the field's _file_name suffix here.
+
+<pre>
+  <?= $form->file('User.avatar') ?>
+</pre>
+
+The last thing to do is to handle form-submit in a controller.
+
+<pre>
+  class UsersController extends AppController {
+    var $name = 'Users';
+    var $uses = array('User');
+    var $helpers = array('Form', 'Upload');
+    
+    function create() {
+      if (!empty($this->data)) {
+        $this->User->create($this->data);
+        if ($this->User->save()) {
+          $this->redirect('/users/show/'.$this->User->id);
+        }
+      }
+    }
+    
+    function show($id) {
+      $this->set('user', $this->User->findById($id));
+    }
+  }
+</pre>
+
+Let's create users/show.ctp view to see the results. Note that we've included UploadHelper in controller's $helpers.
+
+<pre>
+  That would be the original file:
+  <?= $upload->image($user, 'User.avatar') ?>
+  <br/>
+  And now it's thumbnail:
+  <?= $upload->image($user, 'User.avatar', 'thumb') ?>
+</pre>
+
+That's how you create new records with uploaded files. Updating existing record would delete a file attached to it from disk.
+
+Could it be any easier? Probably not. Is there more to offer? Yes.
+
+h3. Advanced configuration
+
+* You can change the path where the files are saved
+
+<pre>
+  var $actsAs = array(
+    'Upload' => array(
+      'avatar' => array(
+        'path' => 'your/new/path'
+      )
+    )
+  );
+</pre>
+
+The path string can contain special :keys that will be substituted at run time with appropriate values. Here's the list of available :keys with the values they're substituted with.
+
+  * :webroot - path to your app's webroot dir
+  * :model - name of the model tableized with Inflector::tableize (would be 'users' for User model)
+  * :id - ID of the record
+  * :basename - basename of the uploaded file's original name (would be 'photo' for photo.jpg)
+  * :extension - extension of the uploaded file's original name (would be 'jpg' for photo.jpg)
+  * :style - name of the thumbnail's style
+
+Default value for path is ':webroot/upload/:model/:id/:basename_:style.:extension'.
+
+* You can change the url the helper points to when displaying or linking to uploaded files
+
+This setting accepts all the :keys mentioned above and it's default value depends on path setting. For default path it would be defaults '/upload/:model/:id/:basename_:style.:extension'.
+
+You probably won't need to change it too often, though.
+
+* You can point to default url if the uploaded file is missing
+
+If uploading an avatar is only a option to your users, you would probably want to have some default image being displayed if no image is uploaded by a user.
+
+<pre>
+  var $actsAs = array(
+    'Upload' => array(
+      'avatar' => array(
+        'default_url' => 'path/to/default/image'
+      )
+    )
+  );
+</pre>
+
+This setting accepts all the :keys mentioned above, but it's not set by default which results in usual url being returned even it the file does not exist.
+
+h3. More on styles
+
+Styles are the definition of thumbnails that will be generated for original image. You can define as many as you want.
+
+<pre>
+  var $actsAs = array(
+    'Upload' => array(
+      'avatar' => array(
+        'styles' => array(
+          'big' => '200x200',
+          'small' => '120x120'
+          'thumb' => '80x80'
+        )
+      )
+    )
+  );
+</pre>
+
+Be sure to have :style key included in your path setting to differentiate file names. The original file is also saved and has 'original' as :style value, so you don't need it to define it yourself.
+
+If you want non-image files to be uploaded, define no styles at all. It does not make much sense to generate thumbnails for zip or pdf files.
+
+h3. More on database table structure
+
+The only database field you need to add to your model's table is [field]_file_name. Replace [field] with chosen name (avatar for example).
+
+There are two optional fields you can add: [field]_content_type and [field]_file_size. If they're present they will be populated with uploaded file's content type and size in bytes respectively.
+
+Model can have many uploaded files at once. For example define two fields in database table: avatar_file_name and logo_file_name. Set up behavior:
+
+<pre>
+  var $actsAs = array(
+    'Upload' => array(
+      'avatar' => array(),
+      'logo' => array()
+      )
+    )
+  );
+</pre>
+
+h3. Using the helper
+
+There are two methods of UploadHelper you can use:
+
+* UploadHelper::url($data, $field, $style = 'original', $urlize = true)
+
+  Returns url to the uploaded file
+  
+  * $data - record from database (would be $user here)
+  * $field - name of a field, like this 'Modelname.fieldname' (would be 'User.avatar' here)
+  * $style - name of a thumbnail's style
+  * $urlize - if true returned url is wrapped with $html->url()
+
+* UploadHelper::image($data, $field, $style = 'original', $options = array())
+
+  Returns image tag pointing to uploaded file.
+  
+  * $data - record from database (would be $user here)
+  * $field - name of a field, like this 'Modelname.fieldname' (would be 'User.avatar' here)
+  * $style - name of a thumbnail's style
+  * $options - array of HTML attributes passed to $html->image()
+
+Assuming that you have read a user from database and it's available in $user variable in view.
+
+<pre>
+  <?= $upload->image($user, 'User.avatar', 'thumb') ?>
+</pre>
+
+When you fetch user from database you would usually get:
+
+<pre>
+  $user = array(
+    'User' => array(
+      'id' => 1,
+      'avatar_file_name' => 'photo.jpg'
+    )
+  );
+</pre>
+
+But when the user is fetched as one of many users associated by hasMany association to another model it could be something like:
+
+<pre>
+  $data = array(
+    'User' => array(
+      0 => array(
+        'id' => 1,
+        'avatar_file_name' => 'photo.jpg'
+      ),
+      1 => array(
+        'id' => 2,
+        'avatar_file_name' => 'photo2.jpg'
+      )
+    )
+  );
+</pre>
+
+Then you should do:
+
+<pre>
+  <?= $upload->image($data['User'][0], 'User.avatar', 'thumb') ?>
+</pre>
+
+The helper is smart enough to figure out the structure of data you pass to it.
+
+h3. Requirements
+
+UploadPack was developed with CakePHP 1.2 RC3, so it's not guaranteed to work with previous versions. You'll need GD library if you plan to generate image thumbnails. It works OK with 2.0.34 version at least, earlier versions may work too.
+
+h2. Plans for future
+
+There is still something missing in UploadPack, here's what will be added soon:
+
+* content type and file size validation
+* file name normalization
+* allow deletion of a file without deleting whole record
+
+The plans for more distant future:
+
+* switch to ImageMagick and allow more customization of method images are thumbnailed with
+* allow uploads to S3
+* provide a method to regenerate all thumbnails, helpful if you later decide to have different sizes of thumbnails or more styles
+
+h2. Copyright
+
+Copyright (c) 2008 Michał Szajbe (http://codetunes.com) and netguru (http://netguru.pl), released under the MIT license.
