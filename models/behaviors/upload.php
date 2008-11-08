@@ -32,7 +32,7 @@ class UploadBehavior extends ModelBehavior {
   function beforeSave(&$model) {
     $this->_reset();
     foreach (self::$__settings[$model->name] as $field => $settings) {
-      if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field])) {
+      if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && is_uploaded_file($model->data[$model->name][$field]['tmp_name'])) {
         if (!empty($model->id)) {
           $this->_prepareToDeleteFiles($model, $field, true);
         }
@@ -76,18 +76,16 @@ class UploadBehavior extends ModelBehavior {
     if (!empty($this->toWrite)) {
       foreach ($this->toWrite as $field => $toWrite) {
         $settings = $this->_interpolate($model, $field, $toWrite['name'], 'original');
-        if (is_uploaded_file($toWrite['tmp_name'])) {
-          $destDir = dirname($settings['path']);
-          if (!file_exists($destDir)) {
-            @mkdir($destDir, 0777, true);
-            @chmod($destDir, 0777);
-          }
-          if (is_dir($destDir) && is_writable($destDir)) {
-            if (@move_uploaded_file($toWrite['tmp_name'], $settings['path'])) {
-              foreach ($settings['styles'] as $style => $geometry) {
-                $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
-                $this->_resize($settings['path'], $newSettings['path'], $geometry);
-              }
+        $destDir = dirname($settings['path']);
+        if (!file_exists($destDir)) {
+          @mkdir($destDir, 0777, true);
+          @chmod($destDir, 0777);
+        }
+        if (is_dir($destDir) && is_writable($destDir)) {
+          if (@move_uploaded_file($toWrite['tmp_name'], $settings['path'])) {
+            foreach ($settings['styles'] as $style => $geometry) {
+              $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
+              $this->_resize($settings['path'], $newSettings['path'], $geometry);
             }
           }
         }
