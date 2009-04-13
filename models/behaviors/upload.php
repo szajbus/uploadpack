@@ -115,7 +115,7 @@ class UploadBehavior extends ModelBehavior {
       }
     }
     if ($needToRead) {
-      $data = $model->find('first', array('conditions' => array($model->alias.'.'.$model->primaryKey => $model->id), 'fields' => $fields));
+      $data = $model->find('first', array('conditions' => array($model->alias.'.'.$model->primaryKey => $model->id), 'fields' => $fields, 'callbacks' => false));
     } else {
       $data = $model->data;
     }
