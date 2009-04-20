@@ -32,7 +32,7 @@ class UploadBehavior extends ModelBehavior {
   function beforeSave(&$model) {
     $this->_reset();
     foreach (self::$__settings[$model->name] as $field => $settings) {
-      if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && is_uploaded_file($model->data[$model->name][$field]['tmp_name'])) {
+      if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && file_exists($model->data[$model->name][$field]['tmp_name'])) {
         if (!empty($model->id)) {
           $this->_prepareToDeleteFiles($model, $field, true);
         }
