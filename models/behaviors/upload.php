@@ -6,8 +6,10 @@
  * 
  * UploadBehavior does all the job of saving files to disk while saving records to database. For more info read UploadPack documentation.
  *
- * @author Michał Szajbe (michal.szajbe@gmail.com) and netguru.pl
- * @link http://github.com/netguru/uploadpack
+ * joe bartlett's lovingly handcrafted tweaks add several resize modes. see "more on styles" in the documentation.
+ *
+ * @author Michał Szajbe (michal.szajbe@gmail.com) and netguru.pl and joe bartlett (contact@jdbartlett.com)
+ * @link http://github.com/jdbartlett/uploadpack
  * @version 0.1
  */
 class UploadBehavior extends ModelBehavior {
@@ -194,29 +196,62 @@ class UploadBehavior extends ModelBehavior {
     if ($src = $createHandler($destFile)) {
       $srcW = imagesx($src);
       $srcH = imagesy($src);
-      list($width, $height) = explode('x', $geometry);
-      $destW = $width;
-      $destH = $height;
-      if ($srcW > $width || $srcH > $height) {
-        $ratio = $width / $srcW;
-        if ($srcH * $ratio <= $height) {
-          $destH = $srcH * $ratio;
+
+      // determine destination dimensions and resize mode from provided geometry
+      if (preg_match('/^\\[[\\d]+x[\\d]+\\]$/', $geometry)) {
+        // resize with banding
+        list($destW, $destH) = explode('x', substr($geometry, 1, strlen($geometry)-2));
+        $resizeMode = 'band';
+      } elseif (preg_match('/^[\\d]+x[\\d]+$/', $geometry)) {
+        // cropped resize (best fit)
+        list($destW, $destH) = explode('x', $geometry);
+        $resizeMode = 'best';
+      } elseif (preg_match('/^[\\d]+w$/', $geometry)) {
+        // calculate heigh according to aspect ratio
+        $destW = strlen($geometry)-1;
+        $resizeMode = false;
+      } elseif (preg_match('/^[\\d]+h$/', $geometry)) {
+        // calculate width according to aspect ratio
+        $destH = strlen($geometry)-1;
+        $resizeMode = false;
+      } elseif (preg_match('/^[\\d]+l$/', $geometry)) {
+        // calculate shortest side according to aspect ratio
+        if ($srcW > $srcH) $destW = strlen($geometry)-1;
+        else $destH = strlen($geometry)-1;
+        $resizeMode = false;
+      }
+      if (!isset($destW)) $destW = ($destH/$srcH) * $srcW;
+      if (!isset($destH)) $destH = ($destW/$srcW) * $srcH;
+  
+      // determine resize dimensions from appropriate resize mode and ratio
+      if ($resizeMode == 'best') {
+        // "best fit" mode
+        if ($srcW > $srcH) {
+          if ($srcH/$destH > $srcW/$destW) $ratio = $destW/$srcW;
+          else $ratio = $destH/$srcH;
         } else {
-          $ratio = $height / $srcH;
-          $destW = $srcW * $ratio;
+          if ($srcH/$destH < $srcW/$destW) $ratio = $destH/$srcH;
+          else $ratio = $destW/$srcW;
         }
+        $resizeW = $srcW*$ratio;
+        $resizeH = $srcH*$ratio;
       }
-      $destX = 0;
-      $destY = 0;
-      if ($destW < $width) {
-        $destX = floor(($width - $destW) / 2);
+      elseif ($resizeMode == 'band') {
+        // "banding" mode
+        if ($srcW > $srcH) $ratio = $destW/$srcW;
+        else $ratio = $destH/$srcH;
+        $resizeW = $srcW*$ratio;
+        $resizeH = $srcH*$ratio;
       }
-      if ($destY < $height) {
-        $destY = floor(($height - $destH) / 2);
+      else {
+        // no resize ratio
+        $resizeW = $destW;
+        $resizeH = $destH;
       }
-      $img = imagecreatetruecolor($width, $height);
+      
+      $img = imagecreatetruecolor($destW, $destH);
       imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
-      imagecopyresampled($img, $src, $destX, $destY, 0, 0, $destW, $destH, $srcW, $srcH);
+      imagecopyresampled($img, $src, ($destW-$resizeW)/2, ($destH-$resizeH)/2, 0, 0, $resizeW, $resizeH, $srcW, $srcH);
       $outputHandler($img, $destFile);
       return true;
     }
