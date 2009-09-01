@@ -1,13 +1,13 @@
 <?php
 /**
- * This file is a part of UploadPack - a set of classes that makes file uploads in CakePHP as easy as possible. 
+ * This file is a part of UploadPack - a plugin that makes file uploads in CakePHP as easy as possible. 
  * 
  * UploadHelper
  *
  * UploadHelper provides fine access to files uploaded with UploadBehavior. It generates url for those files and can display image tags of uploaded images. For more info read UploadPack documentation.
  *
- * @author Michał Szajbe (michal.szajbe@gmail.com) and netguru.pl
- * @link http://github.com/netguru/uploadbehavior
+ * @author Michał Szajbe (michal.szajbe@gmail.com)
+ * @link http://github.com/szajbus/uploadpack
  * @version 0.1
  */
 class UploadHelper extends AppHelper {

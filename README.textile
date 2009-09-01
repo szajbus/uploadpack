@@ -1,6 +1,6 @@
 h1. UploadPack
 
-UploadPack is a set of classes that makes file uploads in CakePHP as easy as possible. It works with almost no configuration, but if you need more flexibility you can easily override default settings.
+UploadPack is a plugin that makes file uploads in CakePHP as easy as possible. It works with almost no configuration, but if you need more flexibility you can easily override default settings.
 
 What's included:
 
@@ -11,6 +11,10 @@ p(. Attach it to your model, it will detect any uploaded file and save it to dis
 h4. UploadHelper
 
 p(. Use it in your views to display uploaded images or links to files in general.
+
+h2. Installation
+
+Simply copy upload_pack folder to your app/plugins.
 
 h2. Usage
 
@@ -36,7 +40,7 @@ Attach UploadBehavior to User model and set it up to handle avatars.
   class User extends AppModel {
     var $name = 'User';
     var $actsAs = array(
-      'Upload' => array(
+      'UploadPack.Upload' => array(
         'avatar' => array(
           'styles' => array(
             'thumb' => '80x80'
@@ -63,7 +67,7 @@ The last thing to do is to handle form-submit in a controller.
   class UsersController extends AppController {
     var $name = 'Users';
     var $uses = array('User');
-    var $helpers = array('Form', 'Upload');
+    var $helpers = array('Form', 'UploadPack.Upload');
     
     function create() {
       if (!empty($this->data)) {
@@ -100,7 +104,7 @@ h4. You can change the path where the files are saved
 
 <pre><code>
   var $actsAs = array(
-    'Upload' => array(
+    'UploadPack.Upload' => array(
       'avatar' => array(
         'path' => 'your/new/path'
       )
@@ -131,7 +135,7 @@ If uploading an avatar is only a option to your users, you would probably want t
 
 <pre><code>
   var $actsAs = array(
-    'Upload' => array(
+    'UploadPack.Upload' => array(
       'avatar' => array(
         'default_url' => 'path/to/default/image'
       )
@@ -147,7 +151,7 @@ Styles are the definition of thumbnails that will be generated for original imag
 
 <pre><code>
   var $actsAs = array(
-    'Upload' => array(
+    'UploadPack.Upload' => array(
       'avatar' => array(
         'styles' => array(
           'big' => '200x200',
@@ -181,7 +185,7 @@ Model can have many uploaded files at once. For example define two fields in dat
 
 <pre><code>
   var $actsAs = array(
-    'Upload' => array(
+    'UploadPack.Upload' => array(
       'avatar' => array(),
       'logo' => array()
       )
@@ -272,6 +276,6 @@ The plans for more distant future:
 
 h2. Copyright
 
-Copyright (c) 2008 Michał Szajbe (http://codetunes.com) and netguru (http://netguru.pl), released under the MIT license.
+Copyright (c) 2008 Michał Szajbe (http://codetunes.com), released under the MIT license.
 
 joe bartlett's (http://jdbartlett.com) tweaks aren't under copyright. Run free, little tweaks!

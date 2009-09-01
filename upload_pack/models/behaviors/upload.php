@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is a part of UploadPack - a set of classes that makes file uploads in CakePHP as easy as possible. 
+ * This file is a part of UploadPack - a plugin that makes file uploads in CakePHP as easy as possible. 
  * 
  * UploadBehavior
  * 
@@ -8,8 +8,8 @@
  *
  * joe bartlett's lovingly handcrafted tweaks add several resize modes. see "more on styles" in the documentation.
  *
- * @author Michał Szajbe (michal.szajbe@gmail.com) and netguru.pl and joe bartlett (contact@jdbartlett.com)
- * @link http://github.com/jdbartlett/uploadpack
+ * @author Michał Szajbe (michal.szajbe@gmail.com) and joe bartlett (contact@jdbartlett.com)
+ * @link http://github.com/szajbus/uploadpack
  * @version 0.1
  */
 class UploadBehavior extends ModelBehavior {
