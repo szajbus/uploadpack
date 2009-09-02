@@ -10,7 +10,6 @@
  *
  * @author Michał Szajbe (michal.szajbe@gmail.com) and joe bartlett (contact@jdbartlett.com)
  * @link http://github.com/szajbus/uploadpack
- * @version 0.1
  */
 class UploadBehavior extends ModelBehavior {
   
@@ -258,5 +257,62 @@ class UploadBehavior extends ModelBehavior {
     return false;
   }
   
+  function attachmentMinSize(&$model, $value, $min) {
+    $value = array_shift($value);
+    if (!empty($value['tmp_name'])) {
+      return (int)$min <= (int)$value['size'];
+    }
+    return true;
+  }
+  
+  function attachmentMaxSize(&$model, $value, $max) {
+    $value = array_shift($value);
+    if (!empty($value['tmp_name'])) {
+      return (int)$value['size'] <= (int)$max;
+    }
+    return true;
+  }
+  
+  function attachmentContentType(&$model, $value, $contentTypes) {
+    $value = array_shift($value);
+    if (!is_array($contentTypes)) {
+      $contentTypes = array($contentTypes);
+    }
+    if (!empty($value['tmp_name'])) {
+      foreach ($contentTypes as $contentType) {
+        if (substr($contentType, 0, 1) == '/') {
+          if (preg_match($contentType, $value['type'])) {
+            return true;
+          }
+        } elseif ($contentType == $value['type']) {
+          return true;
+        }
+      }
+      return false;
+    }
+    return true;
+  }
+  
+  function attachmentPresence(&$model, $value) {
+    $keys = array_keys($value);
+    $field = $keys[0];
+    $value = array_shift($value);
+    
+    if (!empty($value['tmp_name'])) {
+      return true;
+    }
+    
+    if (!empty($model->id)) {
+      if (!empty($model->data[$model->alias][$field.'_file_name'])) {
+        return true;
+      } elseif (!isset($model->data[$model->alias][$field.'_file_name'])) {
+        $existingFile = $model->field($field.'_file_name', array($model->primaryKey => $model->id));
+        if (!empty($existingFile)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 ?>

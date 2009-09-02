@@ -8,7 +8,6 @@
  *
  * @author Michał Szajbe (michal.szajbe@gmail.com)
  * @link http://github.com/szajbus/uploadpack
- * @version 0.1
  */
 class UploadHelper extends AppHelper {
   var $helpers = array('Html');

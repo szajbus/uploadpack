@@ -100,6 +100,61 @@ Could it be any easier? Probably not. Is there more to offer? Yes.
 
 h3. Advanced configuration
 
+h4. You can validate uploaded files
+
+UploadBehavior provides some validation rules for you to use together with standard CakePHP validation mechanism.
+
+Validate attachment's size:
+
+<pre><code>
+  var $validate = array(
+    'avatar' => array(
+      'maxSize' => array(
+        'rule' => array('attachmentMaxSize', 1048576),
+        'message' => 'Avatar can't be larger than 1MB'
+      ),
+      'minSize' => array(
+        'rule' => array('attachmentMinSize', 1024),
+        'message' => 'Avatar can't be smaller than 1KB'
+      )
+    )
+  );
+</code></pre>
+
+Validate attachment's content type:
+
+<pre><code>
+  var $validate = array(
+    'avatar' => array(
+      'image1 => array(
+        'rule' => array('attachmentContentType', 'image/jpeg'),
+        'message' => 'Only jpegs please'
+      ),
+      'image2' => array(
+        'rule' => array('attachmentContentType', array('image/jpeg', 'image/gif')),
+        'message' => 'Only jpegs or gifs please'
+      ),
+      'image3' => array(
+        'rule' => array('attachmentContentType', array('document/pdf', '/^image\/.+/')),
+        'message' => 'Only pdfs or images please'
+      )
+    )
+  );
+</code></pre>
+
+Validate attachment's presence:
+
+<pre><code>
+  var $validate = array(
+    'avatar' => array(
+      'rule' => array('attachmentPresence'),
+      'message' => 'Avatar is required'
+    )
+  );
+</code></pre>
+
+If you're editing a record that already has avatar attached and you don't supply a new one, record will be valid.
+
 h4. You can change the path where the files are saved
 
 <pre><code>
@@ -265,14 +320,16 @@ h2. Plans for future
 
 There is still something missing in UploadPack, here's what will be added soon:
 
-* content type and file size validation
 * file name normalization
 * allow deletion of a file without deleting whole record
 
 The plans for more distant future:
 
+* test coverage
 * allow uploads to S3
 * provide a method to regenerate all thumbnails, helpful if you later decide to have different sizes of thumbnails or more styles
+
+I you want to help implementing these features, feel free to submit your patches.
 
 h2. Copyright
 
