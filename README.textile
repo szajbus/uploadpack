@@ -169,12 +169,14 @@ h4. You can change the path where the files are saved
 
 The path string can contain special :keys that will be substituted at run time with appropriate values. Here's the list of available :keys with the values they're substituted with.
 
+* :app - path to your app dir
 * :webroot - path to your app's webroot dir
 * :model - name of the model tableized with Inflector::tableize (would be 'users' for User model)
 * :id - ID of the record
 * :basename - basename of the uploaded file's original name (would be 'photo' for photo.jpg)
 * :extension - extension of the uploaded file's original name (would be 'jpg' for photo.jpg)
 * :style - name of the thumbnail's style
+* :attachment - pluralized name of the attachment (for example 'avatars')
 
 Default value for path is ':webroot/upload/:model/:id/:basename_:style.:extension'.
 

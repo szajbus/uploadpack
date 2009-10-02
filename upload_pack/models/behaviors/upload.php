@@ -147,15 +147,17 @@ class UploadBehavior extends ModelBehavior {
     return self::interpolate($model->name, $model->id, $field, $filename, $style);
   }
   
-  static function interpolate($modelName, $modelId, $field, $filename, $style, $defaults = array()) {
+  static function interpolate($modelName, $modelId, $field, $filename, $style = 'original', $defaults = array()) {
     $pathinfo = pathinfo($filename);
     $interpolations = array_merge(array(
+      'app' => preg_replace('/\/$/', '', APP),
       'webroot' => preg_replace('/\/$/', '', WWW_ROOT),
       'model' => Inflector::tableize($modelName),
       'basename' => !empty($filename) ? $pathinfo['filename'] : null,
       'extension' => !empty($filename) ? $pathinfo['extension'] : null,
       'id' => $modelId,
-      'style' => $style
+      'style' => $style,
+      'attachment' => Inflector::pluralize($field)
     ), $defaults);
     $settings = self::$__settings[$modelName][$field];
     $keys = array('path', 'url', 'default_url');
