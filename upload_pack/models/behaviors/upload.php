@@ -157,7 +157,8 @@ class UploadBehavior extends ModelBehavior {
       'extension' => !empty($filename) ? $pathinfo['extension'] : null,
       'id' => $modelId,
       'style' => $style,
-      'attachment' => Inflector::pluralize($field)
+      'attachment' => Inflector::pluralize($field),
+      'hash' => md5((!empty($filename) ? $pathinfo['filename'] : "") . Configure::read('Security.salt'))
     ), $defaults);
     $settings = self::$__settings[$modelName][$field];
     $keys = array('path', 'url', 'default_url');
