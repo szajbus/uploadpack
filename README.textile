@@ -177,6 +177,7 @@ The path string can contain special :keys that will be substituted at run time w
 * :extension - extension of the uploaded file's original name (would be 'jpg' for photo.jpg)
 * :style - name of the thumbnail's style
 * :attachment - pluralized name of the attachment (for example 'avatars')
+* :hash - md5 hash of the original filename + Security.salt
 
 Default value for path is ':webroot/upload/:model/:id/:basename_:style.:extension'.
 
