@@ -235,11 +235,11 @@ You can specify any of the following resize modes for your styles:
 
 h3. More on database table structure
 
-The only database field you need to add to your model's table is [field]_file_name. Replace [field] with chosen name (avatar for example).
+The only database field you need to add to your model's table is @[field]_file_name@. Replace @[field]@ with chosen name (avatar for example).
 
-There are two optional fields you can add: [field]_content_type and [field]_file_size. If they're present they will be populated with uploaded file's content type and size in bytes respectively.
+There are two optional fields you can add: @[field]_content_type@ and @[field]_file_size@. If they're present they will be populated with uploaded file's content type and size in bytes respectively.
 
-Model can have many uploaded files at once. For example define two fields in database table: avatar_file_name and logo_file_name. Set up behavior:
+Model can have many uploaded files at once. For example define two fields in database table: @avatar_file_name@ and @logo_file_name@. Set up behavior:
 
 <pre><code>
   var $actsAs = array(
