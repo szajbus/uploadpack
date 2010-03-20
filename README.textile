@@ -14,7 +14,10 @@ p(. Use it in your views to display uploaded images or links to files in general
 
 h2. Installation
 
-Simply copy upload_pack folder to your app/plugins.
+# Download this: _http://github.com/szajbus/uploadpack/zipball/master_
+# Unzip that download.
+# Copy the resulting folder to _app/plugins_
+# Rename the folder you just copied to _upload_pack_
 
 h2. Usage
 
