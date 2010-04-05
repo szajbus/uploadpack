@@ -230,6 +230,18 @@ If uploading an avatar is only a option to your users, you would probably want t
 
 This setting accepts all the :keys mentioned above, but it's not set by default which results in usual url being returned even it the file does not exist.
 
+h4. You can choose to automatically scale down images that are wider than the <code>maxWidth</code> specified in validation.
+
+<pre><code>
+  var $actsAs = array(
+    'UploadPack.Upload' => array(
+      'avatar' => array(
+        'resizeToMaxWidth' => true
+      )
+    )
+  );
+</code></pre>
+
 h3. More on styles
 
 Styles are the definition of thumbnails that will be generated for original image. You can define as many as you want.

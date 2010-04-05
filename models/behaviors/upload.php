@@ -19,10 +19,13 @@ class UploadBehavior extends ModelBehavior {
   
   var $toDelete = array();
   
+  var $maxWidthSize = false;
+
   function setup(&$model, $settings = array()) {
     $defaults = array(
       'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
-      'styles' => array()
+      'styles' => array(),
+      'resizeToMaxWidth' => false
     );
     
     foreach ($settings as $field => $array) {
@@ -88,6 +91,9 @@ class UploadBehavior extends ModelBehavior {
         }
         if (is_dir($destDir) && is_writable($destDir)) {
           if (@move_uploaded_file($toWrite['tmp_name'], $settings['path'])) {
+            if($this->maxWidthSize) {
+              $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w');
+            }
             foreach ($settings['styles'] as $style => $geometry) {
               $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
               $this->_resize($settings['path'], $newSettings['path'], $geometry);
@@ -340,7 +346,15 @@ class UploadBehavior extends ModelBehavior {
   }
 
   function maxWidth(&$model, $value, $maxWidth) {
-    return $this->_validateDimension($value, 'max', 'x', $maxWidth);
+    $keys = array_keys($value);
+    $field = $keys[0];
+    $settings = self::$__settings[$model->name][$field];
+    if($settings['resizeToMaxWidth'] && !$this->_validateDimension($value, 'max', 'x', $maxWidth)) {
+      $this->maxWidthSize = $maxWidth;
+      return true;
+    } else {
+      return $this->_validateDimension($value, 'max', 'x', $maxWidth);
+    }
   }
 
   function maxHeight(&$model, $value, $maxHeight) {
