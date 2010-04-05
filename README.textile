@@ -156,6 +156,30 @@ Validate attachment's presence:
   );
 </code></pre>
 
+Validate image size:
+<pre><code>
+  var $validate = array(
+    'avatar' => array(
+      'minWidth' => array(
+		'rule' => array('minWidth', '100'),
+		'message' => 'Photo must be at least 100 pixels wide'
+	  ),
+	  'maxWidth' => array(
+		'rule' => array('maxWidth', '600'),
+		'message' => 'Photo can\'t be over 600 pixels wide'
+	  ),
+	  'minHeight' => array(
+		'rule' => array('minHeight', '100'),
+		'message' => 'Photo must be at least 100 pixels wide'
+	  ),
+	  'maxHeight' => array(
+		'rule' => array('maxHeight', '600'),
+		'message' => 'Photo can\'t be over 600 pixels wide'
+	  )
+    )
+  );
+</code></pre>
+
 If you're editing a record that already has avatar attached and you don't supply a new one, record will be valid.
 
 h4. You can change the path where the files are saved

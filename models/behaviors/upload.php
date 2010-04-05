@@ -203,7 +203,7 @@ class UploadBehavior extends ModelBehavior {
         $outputHandler = 'imagepng';
         break;
       default:
-    	  return false;
+          return false;
     }
     if ($src = $createHandler($destFile)) {
       $srcW = imagesx($src);
@@ -322,6 +322,50 @@ class UploadBehavior extends ModelBehavior {
         $existingFile = $model->field($field.'_file_name', array($model->primaryKey => $model->id));
         if (!empty($existingFile)) {
           return true;
+        }
+      }
+    }
+    return false;
+  }
+  function minWidth(&$model, $value, $minWidth) {
+    return $this->_validateDimension($value, 'min', 'x', $minWidth);
+  }
+
+  function minHeight(&$model, $value, $minHeight) {
+    return $this->_validateDimension($value, 'min', 'y', $minHeight);
+  }
+
+  function maxWidth(&$model, $value, $maxWidth) {
+    return $this->_validateDimension($value, 'max', 'x', $maxWidth);
+  }
+
+  function maxHeight(&$model, $value, $maxHeight) {
+    return $this->_validateDimension($value, 'max', 'y', $maxHeight);
+  }
+
+  function _validateDimension($upload, $mode, $axis, $value) {
+    $upload = array_shift($upload);
+    $func = 'images'.$axis;
+    if(!empty($upload['tmp_name'])) {
+      $createHandler = null;
+      if($upload['type'] == 'image/jpeg') {
+        $createHandler = 'imagecreatefromjpeg';
+      } else if($upload['type'] == 'image/gif') {
+        $createHandler = 'imagecreatefromgif';
+      } else if($upload['type'] == 'image/png') {
+        $createHandler = 'imagecreatefrompng';
+      } else {
+        return false;
+      }
+    
+      if($img = $createHandler($upload['tmp_name'])) {
+        switch ($mode) {
+          case 'min':
+            return $func($img) >= $value;
+            break;
+          case 'max':
+            return $func($img) <= $value;
+            break;
         }
       }
     }
