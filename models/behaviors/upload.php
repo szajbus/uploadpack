@@ -220,16 +220,16 @@ class UploadBehavior extends ModelBehavior {
         $resizeMode = 'best';
       } elseif (preg_match('/^[\\d]+w$/', $geometry)) {
         // calculate heigh according to aspect ratio
-        $destW = strlen($geometry)-1;
+        $destW = (int)$geometry-1;
         $resizeMode = false;
       } elseif (preg_match('/^[\\d]+h$/', $geometry)) {
         // calculate width according to aspect ratio
-        $destH = strlen($geometry)-1;
+        $destH = (int)$geometry-1;
         $resizeMode = false;
       } elseif (preg_match('/^[\\d]+l$/', $geometry)) {
         // calculate shortest side according to aspect ratio
-        if ($srcW > $srcH) $destW = strlen($geometry)-1;
-        else $destH = strlen($geometry)-1;
+        if ($srcW > $srcH) $destW = (int)$geometry-1;
+        else $destH = (int)$geometry-1;
         $resizeMode = false;
       }
       if (!isset($destW)) $destW = ($destH/$srcH) * $srcW;
