@@ -58,7 +58,7 @@ That's all we need to do with our model. We defined one thumbnail style named 't
 
 We didn't touch any other configuration settings so files will be saved as webroot/upload/:model/:id/:basename_:style.:extension (with :keys appropriately substituted at run time). Make sure that webroot/upload/users folder is writeable.
 
-Let's upload a file now. We need to add a file field to a standard "create user" form. Note that we omit the field's _file_name suffix here.
+Let's upload a file now. We need to add a file field to a standard "create user" form. Your form must have the right enctype attribute to support file uploads, e.g. <code>$form->create('Users', array('type' => 'file'));</code>. Note that we omit the field's _file_name suffix here.
 
 <pre><code>
   <?= $form->file('User.avatar') ?>
