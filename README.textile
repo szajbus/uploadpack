@@ -6,11 +6,11 @@ What's included:
 
 h4. UploadBehavior
 
-p(. Attach it to your model, it will detect any uploaded file and save it to disk. It can even automatically generate thumbnails of uploaded images.
-  
+Attach it to your model, it will detect any uploaded file and save it to disk. It can even automatically generate thumbnails of uploaded images.
+
 h4. UploadHelper
 
-p(. Use it in your views to display uploaded images or links to files in general.
+Use it in your views to display uploaded images or links to files in general.
 
 h2. Installation
 
@@ -27,74 +27,72 @@ Scenario: Let users upload their avatars and then display them in two styles - o
 
 Solution:
 
-We'll need User model with avatar_file_name field.
+We'll need @User@ model with @avatar_file_name@ field.
 
-<pre><code>
-  CREATE table users (
-    id int(10) unsigned NOT NULL auto_increment,
-    login varchar(20) NOT NULL,
-    avatar_file_name varchar(255)    
-  );
+<pre><code>CREATE table users (
+	id int(10) unsigned NOT NULL auto_increment,
+	login varchar(20) NOT NULL,
+	avatar_file_name varchar(255)
+);
 </code></pre>
 
-Attach UploadBehavior to User model and set it up to handle avatars.
+Attach @UploadBehavior@ to @User@ model and set it up to handle avatars.
 
-<pre><code>
-  class User extends AppModel {
-    var $name = 'User';
-    var $actsAs = array(
-      'UploadPack.Upload' => array(
-        'avatar' => array(
-          'styles' => array(
-            'thumb' => '80x80'
-          )
-        )
-      )
-    );
-  }
+<pre><code><?php
+	class User extends AppModel {
+		var $name = 'User';
+		var $actsAs = array(
+			'UploadPack.Upload' => array(
+				'avatar' => array(
+					'styles' => array(
+						'thumb' => '80x80'
+					)
+				)
+			)
+		);
+	}
+?>
 </code></pre>
 
 That's all we need to do with our model. We defined one thumbnail style named 'thumb' which means that uploaded image's thumnbnail of 80x80 pixels size will be generated and saved to disk together with original image.
 
-We didn't touch any other configuration settings so files will be saved as webroot/upload/:model/:id/:basename_:style.:extension (with :keys appropriately substituted at run time). Make sure that webroot/upload/users folder is writeable.
+We didn't touch any other configuration settings so files will be saved as @webroot/upload/:model/:id/:basename_:style.:extension@ (with :keys appropriately substituted at run time). Make sure that @webroot/upload/users@ folder is writeable.
 
-Let's upload a file now. We need to add a file field to a standard "create user" form. Your form must have the right enctype attribute to support file uploads, e.g. <code>$form->create('Users', array('type' => 'file'));</code>. Note that we omit the field's _file_name suffix here.
+Let's upload a file now. We need to add a file field to a standard "create user" form. Your form must have the right enctype attribute to support file uploads, e.g. @$form->create('Users', array('type' => 'file'));@. Note that we omit the field's @_file_name@ suffix here.
 
-<pre><code>
-  <?= $form->file('User.avatar') ?>
-</code></pre>
+<pre><code><?php echo $form->file('User.avatar') ?></code></pre>
 
 The last thing to do is to handle form-submit in a controller.
 
-<pre><code>
-  class UsersController extends AppController {
-    var $name = 'Users';
-    var $uses = array('User');
-    var $helpers = array('Form', 'UploadPack.Upload');
-    
-    function create() {
-      if (!empty($this->data)) {
-        $this->User->create($this->data);
-        if ($this->User->save()) {
-          $this->redirect('/users/show/'.$this->User->id);
-        }
-      }
-    }
-    
-    function show($id) {
-      $this->set('user', $this->User->findById($id));
-    }
-  }
+<pre><code><?php
+class UsersController extends AppController {
+	var $name = 'Users';
+	var $uses = array('User');
+	var $helpers = array('Form', 'UploadPack.Upload');
+	
+	function create() {
+		if (!empty($this->data)) {
+			$this->User->create($this->data);
+			if ($this->User->save()) {
+				$this->redirect('/users/show/'.$this->User->id);
+			}
+		}
+	}
+	
+	function show($id) {
+		$this->set('user', $this->User->findById($id));
+	}
+}
+?>
 </code></pre>
 
-Let's create users/show.ctp view to see the results. Note that we've included UploadHelper in controller's $helpers.
+Let's create @users/show.ctp@ view to see the results. Note that we've included UploadHelper in controller's $helpers.
 
-<pre><code>
-  That would be the original file:
-  <?= $upload->image($user, 'User.avatar') ?>
-  <br/>
-  And now it's thumbnail:
-  <?= $upload->image($user, 'User.avatar', 'thumb') ?>
+<pre><code>That would be the original file:
+<?php echo $upload->image($user, 'User.avatar') ?>
+
+And now it's thumbnail:
+<?php echo $upload->image($user, 'User.avatar', 'thumb') ?>
 </code></pre>
 
 That's how you create new records with uploaded files. Updating existing record would delete a file attached to it from disk.
@@ -105,112 +103,107 @@ h3. Advanced configuration
 
 h4. You can validate uploaded files
 
-UploadBehavior provides some validation rules for you to use together with standard CakePHP validation mechanism.
+@UploadBehavior@ provides some validation rules for you to use together with standard CakePHP validation mechanism.
 
 Validate attachment's size:
 
-<pre><code>
-  var $validate = array(
-    'avatar' => array(
-      'maxSize' => array(
-        'rule' => array('attachmentMaxSize', 1048576),
-        'message' => 'Avatar can't be larger than 1MB'
-      ),
-      'minSize' => array(
-        'rule' => array('attachmentMinSize', 1024),
-        'message' => 'Avatar can't be smaller than 1KB'
-      )
-    )
-  );
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'maxSize' => array(
+			'rule' => array('attachmentMaxSize', 1048576),
+			'message' => 'Avatar can't be larger than 1MB'
+		),
+		'minSize' => array(
+			'rule' => array('attachmentMinSize', 1024),
+			'message' => 'Avatar can't be smaller than 1KB'
+		)
+	)
+);
 </code></pre>
 
 Validate attachment's content type:
 
-<pre><code>
-  var $validate = array(
-    'avatar' => array(
-      'image1 => array(
-        'rule' => array('attachmentContentType', 'image/jpeg'),
-        'message' => 'Only jpegs please'
-      ),
-      'image2' => array(
-        'rule' => array('attachmentContentType', array('image/jpeg', 'image/gif')),
-        'message' => 'Only jpegs or gifs please'
-      ),
-      'image3' => array(
-        'rule' => array('attachmentContentType', array('document/pdf', '/^image\/.+/')),
-        'message' => 'Only pdfs or images please'
-      )
-    )
-  );
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'image1 => array(
+			'rule' => array('attachmentContentType', 'image/jpeg'),
+			'message' => 'Only jpegs please'
+		),
+		'image2' => array(
+			'rule' => array('attachmentContentType', array('image/jpeg', 'image/gif')),
+			'message' => 'Only jpegs or gifs please'
+		),
+		'image3' => array(
+			'rule' => array('attachmentContentType', array('document/pdf', '/^image\/.+/')),
+			'message' => 'Only pdfs or images please'
+		)
+	)
+);
 </code></pre>
 
 Validate attachment's presence:
 
-<pre><code>
-  var $validate = array(
-    'avatar' => array(
-      'rule' => array('attachmentPresence'),
-      'message' => 'Avatar is required'
-    )
-  );
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'rule' => array('attachmentPresence'),
+		'message' => 'Avatar is required'
+	)
+);
 </code></pre>
 
 Validate image size:
-<pre><code>
-  var $validate = array(
-    'avatar' => array(
-      'minWidth' => array(
-		'rule' => array('minWidth', '100'),
-		'message' => 'Photo must be at least 100 pixels wide'
-	  ),
-	  'maxWidth' => array(
-		'rule' => array('maxWidth', '600'),
-		'message' => 'Photo can\'t be over 600 pixels wide'
-	  ),
-	  'minHeight' => array(
-		'rule' => array('minHeight', '100'),
-		'message' => 'Photo must be at least 100 pixels wide'
-	  ),
-	  'maxHeight' => array(
-		'rule' => array('maxHeight', '600'),
-		'message' => 'Photo can\'t be over 600 pixels wide'
-	  )
-    )
-  );
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'minWidth' => array(
+			'rule' => array('minWidth', '100'),
+			'message' => 'Photo must be at least 100 pixels wide'
+		),
+		'maxWidth' => array(
+			'rule' => array('maxWidth', '600'),
+			'message' => 'Photo can\'t be over 600 pixels wide'
+		),
+		'minHeight' => array(
+			'rule' => array('minHeight', '100'),
+			'message' => 'Photo must be at least 100 pixels wide'
+		),
+		'maxHeight' => array(
+			'rule' => array('maxHeight', '600'),
+			'message' => 'Photo can\'t be over 600 pixels wide'
+		)
+	)
+);
 </code></pre>
 
 If you're editing a record that already has avatar attached and you don't supply a new one, record will be valid.
 
 h4. You can change the path where the files are saved
 
-<pre><code>
-  var $actsAs = array(
-    'UploadPack.Upload' => array(
-      'avatar' => array(
-        'path' => 'your/new/path'
-      )
-    )
-  );
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'path' => 'your/new/path'
+		)
+	)
+);
 </code></pre>
 
-The path string can contain special :keys that will be substituted at run time with appropriate values. Here's the list of available :keys with the values they're substituted with.
+The path string can contain special :keys that will be substituted at run time with appropriate values. Here's the list of available @:keys@ with the values they're substituted with.
 
-* :app - path to your app dir
-* :webroot - path to your app's webroot dir
-* :model - name of the model tableized with Inflector::tableize (would be 'users' for User model)
-* :id - ID of the record
-* :basename - basename of the uploaded file's original name (would be 'photo' for photo.jpg)
-* :extension - extension of the uploaded file's original name (would be 'jpg' for photo.jpg)
-* :style - name of the thumbnail's style
-* :attachment - pluralized name of the attachment (for example 'avatars')
-* :hash - md5 hash of the original filename + Security.salt
+* *:app* - path to your app dir
+* *:webroot* - path to your app's webroot dir
+* *:model* - name of the model tableized with Inflector::tableize (would be 'users' for User model)
+* *:id* - ID of the record
+* *:basename* - basename of the uploaded file's original name (would be 'photo' for photo.jpg)
+* *:extension* - extension of the uploaded file's original name (would be 'jpg' for photo.jpg)
+* *:style* - name of the thumbnail's style
+* *:attachment* - pluralized name of the attachment (for example 'avatars')
+* *:hash* - md5 hash of the original filename + Security.salt
 
-Default value for path is ':webroot/upload/:model/:id/:basename_:style.:extension'.
+Default value for path is @:webroot/upload/:model/:id/:basename_:style.:extension@.
 
 h4. You can change the url the helper points to when displaying or linking to uploaded files
 
-This setting accepts all the :keys mentioned above and it's default value depends on path setting. For default path it would be defaults '/upload/:model/:id/:basename_:style.:extension'.
+This setting accepts all the :keys mentioned above and it's default value depends on path setting. For default path it would be defaults @/upload/:model/:id/:basename_:style.:extension@.
 
 You probably won't need to change it too often, though.
 
@@ -218,59 +211,56 @@ h4. You can point to default url if the uploaded file is missing
 
 If uploading an avatar is only a option to your users, you would probably want to have some default image being displayed if no image is uploaded by a user.
 
-<pre><code>
-  var $actsAs = array(
-    'UploadPack.Upload' => array(
-      'avatar' => array(
-        'default_url' => 'path/to/default/image'
-      )
-    )
-  );
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'default_url' => 'path/to/default/image'
+		)
+	)
+);
 </code></pre>
 
-This setting accepts all the :keys mentioned above, but it's not set by default which results in usual url being returned even it the file does not exist.
+This setting accepts all the @:keys@ mentioned above, but it's not set by default which results in usual url being returned even it the file does not exist.
 
 h4. You can choose to automatically scale down images that are wider than the <code>maxWidth</code> specified in validation.
 
-<pre><code>
-  var $actsAs = array(
-    'UploadPack.Upload' => array(
-      'avatar' => array(
-        'resizeToMaxWidth' => true
-      )
-    )
-  );
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'resizeToMaxWidth' => true
+		)
+	)
+);
 </code></pre>
 
 h3. More on styles
 
 Styles are the definition of thumbnails that will be generated for original image. You can define as many as you want.
 
-<pre><code>
-  var $actsAs = array(
-    'UploadPack.Upload' => array(
-      'avatar' => array(
-        'styles' => array(
-          'big' => '200x200',
-          'small' => '120x120'
-          'thumb' => '80x80'
-        )
-      )
-    )
-  );
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'styles' => array(
+				'big' => '200x200',
+				'small' => '120x120'
+				'thumb' => '80x80'
+			)
+		)
+	)
+);
 </code></pre>
 
-Be sure to have :style key included in your path setting to differentiate file names. The original file is also saved and has 'original' as :style value, so you don't need it to define it yourself.
+Be sure to have @:style@ key included in your path setting to differentiate file names. The original file is also saved and has 'original' as @:style@ value, so you don't need it to define it yourself.
 
 If you want non-image files to be uploaded, define no styles at all. It does not make much sense to generate thumbnails for zip or pdf files.
 
 You can specify any of the following resize modes for your styles:
 
-* '100x80' - resize for best fit into these dimensions, with overlapping edges trimmed if original aspect ratio differs
-* '[100x80]' - resize to fit these dimensions, with white banding if original aspect ratio differs (Michał's original resize method)
-* '100w' - maintain original aspect ratio, resize to 100 pixels wide
-* '80h' - maintain original aspect ratio, resize to 80 pixels high
-* '80l' - maintain original aspect ratio, resize so that longest side is 80 pixels
+* *100x80* - resize for best fit into these dimensions, with overlapping edges trimmed if original aspect ratio differs
+* *[100x80]* - resize to fit these dimensions, with white banding if original aspect ratio differs (Michał's original resize method)
+* *100w* - maintain original aspect ratio, resize to 100 pixels wide
+* *80h* - maintain original aspect ratio, resize to 80 pixels high
+* *80l* - maintain original aspect ratio, resize so that longest side is 80 pixels
 
 h3. More on database table structure
 
@@ -280,14 +270,13 @@ There are two optional fields you can add: @[field]_content_type@ and @[field]_f
 
 Model can have many uploaded files at once. For example define two fields in database table: @avatar_file_name@ and @logo_file_name@. Set up behavior:
 
-<pre><code>
-  var $actsAs = array(
-    'UploadPack.Upload' => array(
-      'avatar' => array(),
-      'logo' => array()
-      )
-    )
-  );
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(),
+		'logo' => array()
+		)
+	)
+);
 </code></pre>
 
 h3. Using the helper
@@ -298,59 +287,53 @@ h4. UploadHelper::url($data, $field, $style = 'original', $urlize = true)
 
 Returns url to the uploaded file
 
-* $data - record from database (would be $user here)
-* $field - name of a field, like this 'Modelname.fieldname' (would be 'User.avatar' here)
-* $style - name of a thumbnail's style
-* $urlize - if true returned url is wrapped with $html->url()
+* *$data* - record from database (would be @$user@ here)
+* *$field* - name of a field, like this @Modelname.fieldname@ (would be @User.avatar@ here)
+* *$style* - name of a thumbnail's style
+* *$urlize* - if true returned url is wrapped with @$html->url()@
 
 h4. UploadHelper::image($data, $field, $style = 'original', $options = array())
 
 Returns image tag pointing to uploaded file.
-  
-* $data - record from database (would be $user here)
-* $field - name of a field, like this 'Modelname.fieldname' (would be 'User.avatar' here)
-* $style - name of a thumbnail's style
-* $options - array of HTML attributes passed to $html->image()
+	
+* *$data* - record from database (would be @$user@ here)
+* *$field* - name of a field, like this @Modelname.fieldname@ (would be @User.avatar@ here)
+* *$style* - name of a thumbnail's style
+* *$options* - array of HTML attributes passed to @$html->image()@
 
-Assuming that you have read a user from database and it's available in $user variable in view.
+Assuming that you have read a user from database and it's available in @$user@ variable in view.
 
-<pre><code>
-  <?= $upload->image($user, 'User.avatar', 'thumb') ?>
-</code></pre>
+<pre><code><?php echo $upload->image($user, 'User.avatar', 'thumb'); ?></code></pre>
 
 When you fetch user from database you would usually get:
 
-<pre><code>
-  $user = array(
-    'User' => array(
-      'id' => 1,
-      'avatar_file_name' => 'photo.jpg'
-    )
-  );
+<pre><code>$user = array(
+	'User' => array(
+		'id' => 1,
+		'avatar_file_name' => 'photo.jpg'
+	)
+);
 </code></pre>
 
 But when the user is fetched as one of many users associated by hasMany association to another model it could be something like:
 
-<pre><code>
-  $data = array(
-    'User' => array(
-      0 => array(
-        'id' => 1,
-        'avatar_file_name' => 'photo.jpg'
-      ),
-      1 => array(
-        'id' => 2,
-        'avatar_file_name' => 'photo2.jpg'
-      )
-    )
-  );
+<pre><code>$data = array(
+	'User' => array(
+		0 => array(
+			'id' => 1,
+			'avatar_file_name' => 'photo.jpg'
+		),
+		1 => array(
+			'id' => 2,
+			'avatar_file_name' => 'photo2.jpg'
+		)
+	)
+);
 </code></pre>
 
 Then you should do:
 
-<pre><code>
-  <?= $upload->image($data['User'][0], 'User.avatar', 'thumb') ?>
-</code></pre>
+<pre><code><?php echo $upload->image($data['User'][0], 'User.avatar', 'thumb') ?></code></pre>
 
 The helper is smart enough to figure out the structure of data you pass to it.
 
