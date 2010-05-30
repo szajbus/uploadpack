@@ -71,6 +71,10 @@ class UploadBehavior extends ModelBehavior {
   
   function _prepareToWriteFiles(&$model, $field) {
     $this->toWrite[$field] = $model->data[$model->name][$field];
+	// make filename URL friendly by using Cake's Inflector
+	$this->toWrite[$field]['name'] = 
+		Inflector::slug(substr($this->toWrite[$field]['name'], 0, strrpos($this->toWrite[$field]['name'], '.'))). // filename
+		substr($this->toWrite[$field]['name'], strrpos($this->toWrite[$field]['name'], '.')); // extension
   }
   
   function _writeFiles(&$model) {
@@ -203,7 +207,7 @@ class UploadBehavior extends ModelBehavior {
         $outputHandler = 'imagepng';
         break;
       default:
-    	  return false;
+          return false;
     }
     if ($src = $createHandler($destFile)) {
       $srcW = imagesx($src);
@@ -220,16 +224,16 @@ class UploadBehavior extends ModelBehavior {
         $resizeMode = 'best';
       } elseif (preg_match('/^[\\d]+w$/', $geometry)) {
         // calculate heigh according to aspect ratio
-        $destW = strlen($geometry)-1;
+        $destW = (int)$geometry-1;
         $resizeMode = false;
       } elseif (preg_match('/^[\\d]+h$/', $geometry)) {
         // calculate width according to aspect ratio
-        $destH = strlen($geometry)-1;
+        $destH = (int)$geometry-1;
         $resizeMode = false;
       } elseif (preg_match('/^[\\d]+l$/', $geometry)) {
         // calculate shortest side according to aspect ratio
-        if ($srcW > $srcH) $destW = strlen($geometry)-1;
-        else $destH = strlen($geometry)-1;
+        if ($srcW > $srcH) $destW = (int)$geometry-1;
+        else $destH = (int)$geometry-1;
         $resizeMode = false;
       }
       if (!isset($destW)) $destW = ($destH/$srcH) * $srcW;
@@ -322,6 +326,50 @@ class UploadBehavior extends ModelBehavior {
         $existingFile = $model->field($field.'_file_name', array($model->primaryKey => $model->id));
         if (!empty($existingFile)) {
           return true;
+        }
+      }
+    }
+    return false;
+  }
+  function minWidth(&$model, $value, $minWidth) {
+    return $this->_validateDimension($value, 'min', 'x', $minWidth);
+  }
+
+  function minHeight(&$model, $value, $minHeight) {
+    return $this->_validateDimension($value, 'min', 'y', $minHeight);
+  }
+
+  function maxWidth(&$model, $value, $maxWidth) {
+    return $this->_validateDimension($value, 'max', 'x', $maxWidth);
+  }
+
+  function maxHeight(&$model, $value, $maxHeight) {
+    return $this->_validateDimension($value, 'max', 'y', $maxHeight);
+  }
+
+  function _validateDimension($upload, $mode, $axis, $value) {
+    $upload = array_shift($upload);
+    $func = 'images'.$axis;
+    if(!empty($upload['tmp_name'])) {
+      $createHandler = null;
+      if($upload['type'] == 'image/jpeg') {
+        $createHandler = 'imagecreatefromjpeg';
+      } else if($upload['type'] == 'image/gif') {
+        $createHandler = 'imagecreatefromgif';
+      } else if($upload['type'] == 'image/png') {
+        $createHandler = 'imagecreatefrompng';
+      } else {
+        return false;
+      }
+    
+      if($img = $createHandler($upload['tmp_name'])) {
+        switch ($mode) {
+          case 'min':
+            return $func($img) >= $value;
+            break;
+          case 'max':
+            return $func($img) <= $value;
+            break;
         }
       }
     }
