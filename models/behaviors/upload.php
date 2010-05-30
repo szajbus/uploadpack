@@ -74,10 +74,10 @@ class UploadBehavior extends ModelBehavior {
   
   function _prepareToWriteFiles(&$model, $field) {
     $this->toWrite[$field] = $model->data[$model->name][$field];
-	// make filename URL friendly by using Cake's Inflector
-	$this->toWrite[$field]['name'] = 
-		Inflector::slug(substr($this->toWrite[$field]['name'], 0, strrpos($this->toWrite[$field]['name'], '.'))). // filename
-		substr($this->toWrite[$field]['name'], strrpos($this->toWrite[$field]['name'], '.')); // extension
+    // make filename URL friendly by using Cake's Inflector
+    $this->toWrite[$field]['name'] = 
+        Inflector::slug(substr($this->toWrite[$field]['name'], 0, strrpos($this->toWrite[$field]['name'], '.'))). // filename
+        substr($this->toWrite[$field]['name'], strrpos($this->toWrite[$field]['name'], '.')); // extension
   }
   
   function _writeFiles(&$model) {
