@@ -68,8 +68,8 @@ class UploadBehavior extends ModelBehavior {
   }
   
   function _reset() {
-    $this->_toWrite = null;
-    $this->_toDelete = null;
+    $this->toWrite = null;
+    $this->toDelete = null;
   }
   
   function _prepareToWriteFiles(&$model, $field) {
