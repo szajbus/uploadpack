@@ -18,6 +18,12 @@ class UploadHelper extends AppHelper {
 		return $this->output($this->Html->image($this->url($data, $path, $options), $htmlOptions));
 	}
 
+	function link($title, $data, $field, $urlOptions = array(), $htmlOptions = array())
+	{
+		$options += array('style' => 'original', 'urlize' => true);
+		return $this->Html->link($title, $this->url($data, $field, $urlOptions), $htmlOptions);
+	}
+
 	function url($data, $field, $options = array())
 	{
 		$options += array('style' => 'original', 'urlize' => true);
