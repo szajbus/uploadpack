@@ -12,13 +12,15 @@
 class UploadHelper extends AppHelper {
 	var $helpers = array('Html');
 
-	function image($data, $path, $style = 'original', $options = array())
+	function image($data, $path, $options = array(), $htmlOptions = array())
 	{
-		return $this->output($this->Html->image($this->url($data, $path, $style, false), $options));
+		$options += array('urlize' => false);
+		return $this->output($this->Html->image($this->url($data, $path, $options), $htmlOptions));
 	}
 
-	function url($data, $field, $style = 'original', $urlize = true)
+	function url($data, $field, $options = array())
 	{
+		$options += array('style' => 'original', 'urlize' => true);
 		list($model, $field) = explode('.', $field);
 		if(is_array($data))
 		{
@@ -36,19 +38,19 @@ class UploadHelper extends AppHelper {
 				$filename = $data[$field.'_file_name'];
 			}
 		}
-		
+
 		if(isset($id) && isset($filename))
 		{
-			$settings = UploadBehavior::interpolate($model, $id, $field, $filename, $style, array('webroot' => ''));
+			$settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
 			$url = isset($settings['url']) ? $settings['url'] : $settings['path'];
 		}
 		else
 		{
-			$settings = UploadBehavior::interpolate($model, null, $field, null, $style, array('webroot' => ''));
+			$settings = UploadBehavior::interpolate($model, null, $field, null, $options['style'], array('webroot' => ''));
 			$url = isset($settings['default_url']) ? $settings['default_url'] : null;
 		}
-		
-		return $urlize ? $this->Html->url($url) : $url;
+
+		return $options['urlize'] ? $this->Html->url($url) : $url;
 	}
 	
 	/**
@@ -112,7 +114,7 @@ class UploadHelper extends AppHelper {
 			'silo' => 'model/mesh', 'vrml' => 'model/vrml', 'wrl' => 'model/vrml',
 			'mime' => 'www/mime', 'pdb' => 'chemical/x-pdb', 'xyz' => 'chemical/x-pdb'
 		);
-		
+
 		return array_search($mimeType, $knownMimeTypes);
 	}
 }
