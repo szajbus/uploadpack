@@ -92,7 +92,7 @@ Let's create @users/show.ctp@ view to see the results. Note that we've included 
 <?php echo $upload->image($user, 'User.avatar') ?>
 
 And now it's thumbnail:
-<?php echo $upload->image($user, 'User.avatar', 'thumb') ?>
+<?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')) ?>
 </code></pre>
 
 That's how you create new records with uploaded files. Updating existing record would delete a file attached to it from disk.
@@ -283,27 +283,30 @@ h3. Using the helper
 
 There are two methods of UploadHelper you can use:
 
-h4. UploadHelper::url($data, $field, $style = 'original', $urlize = true)
+h4. UploadHelper::url($data, $field, $options = array())
 
 Returns url to the uploaded file
 
 * *$data* - record from database (would be @$user@ here)
 * *$field* - name of a field, like this @Modelname.fieldname@ (would be @User.avatar@ here)
-* *$style* - name of a thumbnail's style
-* *$urlize* - if true returned url is wrapped with @$html->url()@
+* *$options* - url options
+** *'style'* - name of a thumbnail's style
+** *'urlize'* - if true returned url is wrapped with @$html->url()@
 
-h4. UploadHelper::image($data, $field, $style = 'original', $options = array())
+h4. UploadHelper::image($data, $field, $options = array(), $htmlOptions = array())
 
 Returns image tag pointing to uploaded file.
 	
 * *$data* - record from database (would be @$user@ here)
 * *$field* - name of a field, like this @Modelname.fieldname@ (would be @User.avatar@ here)
-* *$style* - name of a thumbnail's style
-* *$options* - array of HTML attributes passed to @$html->image()@
+* *$options* - url options
+** *'style'* - name of a thumbnail's style
+** *'urlize'* - if true returned url is wrapped with @$html->url()@
+* *$htmlOptions* - array of HTML attributes passed to @$html->image()@
 
 Assuming that you have read a user from database and it's available in @$user@ variable in view.
 
-<pre><code><?php echo $upload->image($user, 'User.avatar', 'thumb'); ?></code></pre>
+<pre><code><?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')); ?></code></pre>
 
 When you fetch user from database you would usually get:
 
@@ -333,7 +336,7 @@ But when the user is fetched as one of many users associated by hasMany associat
 
 Then you should do:
 
-<pre><code><?php echo $upload->image($data['User'][0], 'User.avatar', 'thumb') ?></code></pre>
+<pre><code><?php echo $upload->image($data['User'][0], 'User.avatar', array('style' => 'thumb')) ?></code></pre>
 
 The helper is smart enough to figure out the structure of data you pass to it.
 
