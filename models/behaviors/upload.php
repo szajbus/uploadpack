@@ -194,6 +194,7 @@ class UploadBehavior extends ModelBehavior {
 
   function _resize($srcFile, $destFile, $geometry) {
     copy($srcFile, $destFile);
+    @chmod($destFile, 0777);
     $pathinfo = UploadBehavior::_pathinfo($srcFile);
     $src = null;
     $createHandler = null;
