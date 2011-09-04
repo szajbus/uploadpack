@@ -25,7 +25,8 @@ class UploadBehavior extends ModelBehavior {
     $defaults = array(
       'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
       'styles' => array(),
-      'resizeToMaxWidth' => false
+      'resizeToMaxWidth' => false,
+      'quality' => 75
     );
     
     foreach ($settings as $field => $array) {
@@ -92,11 +93,11 @@ class UploadBehavior extends ModelBehavior {
         if (is_dir($destDir) && is_writable($destDir)) {
           if (@move_uploaded_file($toWrite['tmp_name'], $settings['path'])) {
             if($this->maxWidthSize) {
-              $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w');
+              $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality']);
             }
             foreach ($settings['styles'] as $style => $geometry) {
               $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
-              $this->_resize($settings['path'], $newSettings['path'], $geometry);
+              $this->_resize($settings['path'], $newSettings['path'], $geometry, $settings['quality']);
             }
           }
         }
@@ -192,7 +193,7 @@ class UploadBehavior extends ModelBehavior {
     return $pathinfo;
   }
 
-  function _resize($srcFile, $destFile, $geometry) {
+  function _resize($srcFile, $destFile, $geometry, $quality = 75) {
     copy($srcFile, $destFile);
     @chmod($destFile, 0777);
     $pathinfo = UploadBehavior::_pathinfo($srcFile);
@@ -275,7 +276,7 @@ class UploadBehavior extends ModelBehavior {
       $img = imagecreatetruecolor($destW, $destH);
       imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
       imagecopyresampled($img, $src, ($destW-$resizeW)/2, ($destH-$resizeH)/2, 0, 0, $resizeW, $resizeH, $srcW, $srcH);
-      $outputHandler($img, $destFile);
+      $outputHandler($img, $destFile, $quality);
       return true;
     }
     return false;
