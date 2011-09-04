@@ -233,6 +233,19 @@ h4. You can choose to automatically scale down images that are wider than the <c
 );
 </code></pre>
 
+h4. JPEG Quality
+
+The jpeg quality can be set with the <code>quality</code> setting.
+
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'quality' => 95
+		)
+	)
+);
+</code></pre>
+
 h4. You can choose another field for an external url
 
 <pre><code>var $actsAs = array(
