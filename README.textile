@@ -237,7 +237,9 @@ h4. You can choose another field for an external url
 
 <pre><code>var $actsAs = array(
 	'UploadPack.Upload' => array(
-		'urlField' => 'gravatar'
+		'avatar' => array(
+			'urlField' => 'gravatar'
+		)
 	)
 );
 </code></pre>
