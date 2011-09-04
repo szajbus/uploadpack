@@ -66,12 +66,45 @@ class UploadBehavior extends ModelBehavior {
   function afterDelete(&$model) {
     $this->_deleteFiles($model);
   }
-  
+
+  function beforeValidate(&$model) {
+    foreach (self::$__settings[$model->name] as $field => $settings) {
+      $data = $model->data[$model->name][$field];
+
+      if ((empty($data) || is_array($data) && empty($data['tmp_name'])) && !empty($model->data[$model->name][$settings['urlField']])) {
+        $data = $model->data[$model->name][$settings['urlField']];
+      }
+
+      if (!is_array($data)) {
+        $model->data[$model->name][$field] = $this->_fetchFromUrl($data);
+      }
+    }
+    return true;
+  }
+
   function _reset() {
     $this->toWrite = null;
     $this->toDelete = null;
   }
   
+  function _fetchFromUrl($url) {
+    $data = array('remote' => true);
+    $data['name'] = end(explode('/', $url));
+    $data['tmp_name'] = tempnam(sys_get_temp_dir(), $data['name']) . '.' . end(explode('.', $url));
+
+    App::import('Core', 'HttpSocket');
+    $httpSocket = new HttpSocket();
+
+    $raw = $httpSocket->get($url);
+    $response = $httpSocket->response;
+
+    $data['size'] = strlen($raw);
+    $data['type'] = reset(explode(';', $response['header']['Content-Type']));
+
+    file_put_contents($data['tmp_name'], $raw);
+    return $data;
+  }
+
   function _prepareToWriteFiles(&$model, $field) {
     $this->toWrite[$field] = $model->data[$model->name][$field];
     // make filename URL friendly by using Cake's Inflector
@@ -90,7 +123,8 @@ class UploadBehavior extends ModelBehavior {
           @chmod($destDir, 0777);
         }
         if (is_dir($destDir) && is_writable($destDir)) {
-          if (@move_uploaded_file($toWrite['tmp_name'], $settings['path'])) {
+          $move = !empty($toWrite['remote']) ? 'rename' : 'move_uploaded_file';
+          if (@$move($toWrite['tmp_name'], $settings['path'])) {
             if($this->maxWidthSize) {
               $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w');
             }
