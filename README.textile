@@ -233,6 +233,19 @@ h4. You can choose to automatically scale down images that are wider than the <c
 );
 </code></pre>
 
+h4. You can choose another field for an external url
+
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'urlField' => 'gravatar'
+		)
+	)
+);
+</code></pre>
+
+This way the user can paste an url or choose a file from their filesystem. The url will mimick usual uploading so it will still be validated and resized.
+
 h3. More on styles
 
 Styles are the definition of thumbnails that will be generated for original image. You can define as many as you want.
