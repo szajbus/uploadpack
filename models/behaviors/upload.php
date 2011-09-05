@@ -247,6 +247,7 @@ class UploadBehavior extends ModelBehavior {
       case 'png':
         $createHandler = 'imagecreatefrompng';
         $outputHandler = 'imagepng';
+        $quality = null;
         break;
       default:
           return false;
