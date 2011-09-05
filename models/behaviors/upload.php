@@ -72,7 +72,7 @@ class UploadBehavior extends ModelBehavior {
     foreach (self::$__settings[$model->name] as $field => $settings) {
       $data = $model->data[$model->name][$field];
 
-      if ((empty($data) || is_array($data) && empty($data['tmp_name'])) && !empty($model->data[$model->name][$settings['urlField']])) {
+      if ((empty($data) || is_array($data) && empty($data['tmp_name'])) && !empty($settings['urlField']) && !empty($model->data[$model->name][$settings['urlField']])) {
         $data = $model->data[$model->name][$settings['urlField']];
       }
 
