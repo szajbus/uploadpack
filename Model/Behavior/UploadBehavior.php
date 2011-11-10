@@ -71,14 +71,16 @@ class UploadBehavior extends ModelBehavior {
 
     public function beforeValidate(&$model) {
         foreach (self::$__settings[$model->name] as $field => $settings) {
-            $data = $model->data[$model->name][$field];
+            if (isset($model->data[$model->name][$field])) {
+                $data = $model->data[$model->name][$field];
 
-            if ((empty($data) || is_array($data) && empty($data['tmp_name'])) && !empty($settings['urlField']) && !empty($model->data[$model->name][$settings['urlField']])) {
-                $data = $model->data[$model->name][$settings['urlField']];
-            }
+                if ((empty($data) || is_array($data) && empty($data['tmp_name'])) && !empty($settings['urlField']) && !empty($model->data[$model->name][$settings['urlField']])) {
+                    $data = $model->data[$model->name][$settings['urlField']];
+                }
 
-            if (!is_array($data)) {
-                $model->data[$model->name][$field] = $this->_fetchFromUrl($data);
+                if (!is_array($data)) {
+                    $model->data[$model->name][$field] = $this->_fetchFromUrl($data);
+                }
             }
         }
         return true;
