@@ -234,7 +234,7 @@ class UploadBehavior extends ModelBehavior {
         $src = null;
         $createHandler = null;
         $outputHandler = null;
-        switch (low($pathinfo['extension'])) {
+        switch (strtolower($pathinfo['extension'])) {
         case 'gif':
             $createHandler = 'imagecreatefromgif';
             $outputHandler = 'imagegif';
