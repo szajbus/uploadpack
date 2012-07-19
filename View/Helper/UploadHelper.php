@@ -47,7 +47,7 @@ class UploadHelper extends AppHelper {
             }
         }
 
-        if(isset($id) && isset($filename))
+        if(isset($id) && !empty($filename))
         {
             $settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
             $url = isset($settings['url']) ? $settings['url'] : $settings['path'];
