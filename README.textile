@@ -69,7 +69,7 @@ class UsersController extends AppController {
 	var $name = 'Users';
 	var $uses = array('User');
 	var $helpers = array('Form', 'UploadPack.Upload');
-	
+
 	function create() {
 		if (!empty($this->data)) {
 			$this->User->create($this->data);
@@ -78,7 +78,7 @@ class UsersController extends AppController {
 			}
 		}
 	}
-	
+
 	function show($id) {
 		$this->set('user', $this->User->findById($id));
 	}
@@ -259,6 +259,13 @@ h4. You can choose another field for an external url
 
 This way the user can paste an url or choose a file from their filesystem. The url will mimick usual uploading so it will still be validated and resized.
 
+h4. Deleting a file attached to field
+
+<pre><code>
+	$model->data['avatar'] = null;
+	$model->save();
+</code></pre>
+
 h3. More on styles
 
 Styles are the definition of thumbnails that will be generated for original image. You can define as many as you want.
@@ -322,7 +329,7 @@ Returns url to the uploaded file
 h4. UploadHelper::image($data, $field, $options = array(), $htmlOptions = array())
 
 Returns image tag pointing to uploaded file.
-	
+
 * *$data* - record from database (would be @$user@ here)
 * *$field* - name of a field, like this @Modelname.fieldname@ (would be @User.avatar@ here)
 * *$options* - url options
@@ -375,7 +382,6 @@ h2. Plans for future
 There is still something missing in UploadPack, here's what will be added soon:
 
 * file name normalization
-* allow deletion of a file without deleting whole record
 
 The plans for more distant future:
 
