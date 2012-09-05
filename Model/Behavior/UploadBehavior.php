@@ -52,6 +52,9 @@ class UploadBehavior extends ModelBehavior {
                     $this->_prepareToDeleteFiles($model, $field, true);
                 }
                 unset($model->data[$model->name][$field]);
+                $model->data[$model->name][$field.'_file_name'] = null;
+                $model->data[$model->name][$field.'_file_size'] = null;
+                $model->data[$model->name][$field.'_content_type'] = null;
             }
         }
         return true;
