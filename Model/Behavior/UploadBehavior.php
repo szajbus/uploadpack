@@ -47,7 +47,7 @@ class UploadBehavior extends ModelBehavior {
                 $model->data[$model->name][$field.'_file_name'] = $this->toWrite[$field]['name'];
                 $model->data[$model->name][$field.'_file_size'] = $this->toWrite[$field]['size'];
                 $model->data[$model->name][$field.'_content_type'] = $this->toWrite[$field]['type'];
-            } elseif ($model->data[$model->name][$field] === null) {
+            } elseif (array_key_exists($field, $model->data[$model->name]) && $model->data[$model->name][$field] === null) {
                 if (!empty($model->id)) {
                     $this->_prepareToDeleteFiles($model, $field, true);
                 }
