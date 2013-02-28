@@ -14,10 +14,12 @@ class UploadHelper extends AppHelper {
 
     public $helpers = array('Html');
 
-    public function image($data, $path, $options = array(), $htmlOptions = array())
+    public function image($data, $path, $options = array(), $htmlOptions = array(), $no_cache = false)
     {
-        $options += array('urlize' => false);
-        return $this->output($this->Html->image($this->url($data, $path, $options), $htmlOptions));
+        $no_cache_param = ($no_cache) ? '?'.time() : ''; // this will force webroser to dont cache image, like that user can see the good thumb after crop
+       
+       $options += array('urlize' => false);
+        return $this->output($this->Html->image($this->url($data, $path, $options).$no_cache_param, $htmlOptions));
     }
 
     public function link($title, $data, $field, $urlOptions = array(), $htmlOptions = array())
