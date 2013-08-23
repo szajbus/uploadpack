@@ -22,7 +22,7 @@ class UploadHelper extends AppHelper {
 
     public function link($title, $data, $field, $urlOptions = array(), $htmlOptions = array())
     {
-        $options += array('style' => 'original', 'urlize' => true);
+        $urlOptions += array('style' => 'original', 'urlize' => true);
         return $this->Html->link($title, $this->url($data, $field, $urlOptions), $htmlOptions);
     }
 
