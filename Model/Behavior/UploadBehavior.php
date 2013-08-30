@@ -27,7 +27,11 @@ class UploadBehavior extends ModelBehavior {
             'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
             'styles' => array(),
             'resizeToMaxWidth' => false,
-            'quality' => 75
+            'quality' => 75,
+            'PDFtoImage' => false,
+            'dpi' => 72,
+            'CMYKicc' => 'JapanColor2001Coated.icc',
+            'RGBicc' => 'sRGB.icc'
         );
 
         foreach ($settings as $field => $array) {
@@ -134,6 +138,8 @@ class UploadBehavior extends ModelBehavior {
                 if (is_dir($destDir) && is_writable($destDir)) {
                     $move = !empty($toWrite['remote']) ? 'rename' : 'move_uploaded_file';
                     if (@$move($toWrite['tmp_name'], $settings['path'])) {
+                        self::_convertPDFtoImageIfPDF($settings, $toWrite);
+
                         if($this->maxWidthSize) {
                             $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality']);
                         }
@@ -433,5 +439,97 @@ class UploadBehavior extends ModelBehavior {
             }
         }
         return false;
+    }
+
+    private function _convertPDFtoImageIfPDF( &$settings, &$toWrite ) {
+        $srcFile = $settings['path'];
+        $pdfToImage = $settings['PDFtoImage'];
+        $dpi = $settings['dpi'];
+        $quality = $settings['quality'];
+        $CMYKicc = $settings['CMYKicc'];
+        $RGBicc = $settings['RGBicc'];
+
+        // pdfToImage: (jpg|png)
+        // destFile ex: example_thumb.pdf -> example_thum.jpg
+        $destFile = preg_replace('/\.pdf$/', ".$pdfToImage", $srcFile);
+        $destFilename = preg_replace('/\.pdf$/', ".$pdfToImage", $toWrite['name']);
+
+        $pathinfo = UploadBehavior::_pathinfo($srcFile);
+
+        if (isset($pdfToImage) && preg_match('/(jpg|png)/', $pdfToImage) &&
+            strtolower($pathinfo['extension']) === 'pdf') {
+            $result = $this->_convertPDFtoImage($srcFile, $destFile, $pdfToImage, $dpi, $quality, $CMYKicc, $RGBicc);
+            if ($result) {
+                // change original file to image file
+                $settings['path'] = $destFile;
+                $toWrite['name'] = $destFilename;
+
+//                // make pdf again from image
+//                $imageSrcFile = $destFile;
+//                $PDFdestFile = preg_replace('/\.pdf$/', "_imaged.pdf", $srcFile);
+//                $this->_convertImageToPDF($imageSrcFile, $PDFdestFile);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private function _convertPDFtoImage($srcFile, $destFile, $imageFileType = 'jpg', $dpi = 72, $quality = 75, $CMYKicc, $RGBicc) {
+        try {
+            $im = new Imagick();
+            $im->setResourceLimit(6, 1); // only use 1 thread
+            $im->setResolution($dpi,$dpi);
+            $im->readImage($srcFile);
+            $im->setIteratorIndex(0);
+            $im->setImageFormat($imageFileType);
+            $im->setImageCompressionQuality($quality);
+            $im->setBackgroundColor('white');
+            //$im->thumbnailImage($destW, $destH, $resizeMode);
+            $im = $im->flattenImages();
+            $im->setImageAlphaChannel(imagick::ALPHACHANNEL_DEACTIVATE);
+            $this->_convertImageCMYKtoRGB($im, $CMYKicc, $RGBicc);
+            $im->writeImage($destFile);
+        }
+        catch(ImagickException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function _convertImageCMYKtoRGB(&$im, $cmykIccFile, $rgbIccFile) {
+        if ($im->getImageColorspace() == Imagick::COLORSPACE_CMYK) {
+            $profiles = $im->getImageProfiles('*', false);
+            // we're only interested if ICC profile(s) exist
+            $has_icc_profile = (array_search('icc', $profiles) !== false);
+            // if it doesnt have a CMYK ICC profile, we add one
+            if ($has_icc_profile === false) {
+                $icc_cmyk = file_get_contents(dirname(__FILE__).'/'.$cmykIccFile);
+                $im->profileImage('icc', $icc_cmyk);
+                unset($icc_cmyk);
+            }
+            // then we add an RGB profile
+            $icc_rgb = file_get_contents(dirname(__FILE__).'/'.$rgbIccFile);
+            $im->profileImage('icc', $icc_rgb);
+            unset($icc_rgb);
+        }
+    }
+
+    private function _convertImageToPDF($srcFile, $destFile) {
+        try {
+            $im = new Imagick();
+            $im->setResourceLimit(6, 1); // only use 1 thread
+            $im->readImage($srcFile);
+            $im->setImageFormat('pdf');
+            $im->writeImage($destFile);
+        }
+        catch(ImagickException $e) {
+            return false;
+        }
+
+        return true;
     }
 }

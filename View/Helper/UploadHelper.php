@@ -20,10 +20,10 @@ class UploadHelper extends AppHelper {
         return $this->output($this->Html->image($this->url($data, $path, $options), $htmlOptions));
     }
 
-    public function link($title, $data, $field, $urlOptions = array(), $htmlOptions = array())
+    public function link($title, $data, $field, $options = array(), $htmlOptions = array())
     {
-        $options += array('style' => 'original', 'urlize' => true);
-        return $this->Html->link($title, $this->url($data, $field, $urlOptions), $htmlOptions);
+        $options += array('style' => 'original', 'urlize' => false);
+        return $this->Html->link($title, $this->url($data, $field, $options), $htmlOptions);
     }
 
     public function url($data, $field, $options = array())
@@ -49,6 +49,12 @@ class UploadHelper extends AppHelper {
 
         if(isset($id) && !empty($filename))
         {
+            $settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
+            // change output filename's ext
+            if(isset($settings['PDFtoImage'])) {
+                $imageFileType = $settings['PDFtoImage'];
+                $filename = preg_replace('/\.pdf$/', ".$imageFileType", $filename);
+            }
             $settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
             $url = isset($settings['url']) ? $settings['url'] : $settings['path'];
         }
