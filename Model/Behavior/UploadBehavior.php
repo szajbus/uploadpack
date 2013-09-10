@@ -22,7 +22,7 @@ class UploadBehavior extends ModelBehavior {
 
     private $maxWidthSize = false;
 
-    public function setup(&$model, $settings = array()) {
+    public function setup(Model $model, $settings = array()) {
         $defaults = array(
             'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
             'styles' => array(),
@@ -35,7 +35,7 @@ class UploadBehavior extends ModelBehavior {
         }
     }
 
-    public function beforeSave(&$model) {
+    public function beforeSave(Model $model) {
         $this->_reset();
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && file_exists($model->data[$model->name][$field]['tmp_name'])) {
@@ -60,24 +60,24 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function afterSave(&$model, $create) {
+    public function afterSave(Model $model, $create) {
         if (!$create) {
             $this->_deleteFiles($model);
         }
         $this->_writeFiles($model);
     }
 
-    public function beforeDelete(&$model) {
+    public function beforeDelete(Model $model, $cascade = true) {
         $this->_reset();
         $this->_prepareToDeleteFiles($model);
         return true;
     }
 
-    public function afterDelete(&$model) {
+    public function afterDelete(Model $model) {
         $this->_deleteFiles($model);
     }
 
-    public function beforeValidate(&$model) {
+    public function beforeValidate(Model $model) {
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (isset($model->data[$model->name][$field])) {
                 $data = $model->data[$model->name][$field];
