@@ -336,7 +336,7 @@ h3. Using the helper
 
 There are two methods of UploadHelper you can use:
 
-h4. UploadHelper::url($data, $field, $options = array())
+h4. UploadHelper::uploadUrl($data, $field, $options = array())
 
 Returns url to the uploaded file
 
@@ -346,7 +346,7 @@ Returns url to the uploaded file
 ** *'style'* - name of a thumbnail's style
 ** *'urlize'* - if true returned url is wrapped with @$html->url()@
 
-h4. UploadHelper::image($data, $field, $options = array(), $htmlOptions = array())
+h4. UploadHelper::uploadImage($data, $field, $options = array(), $htmlOptions = array())
 
 Returns image tag pointing to uploaded file.
 
