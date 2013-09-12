@@ -176,6 +176,26 @@ Validate image size:
 
 If you're editing a record that already has avatar attached and you don't supply a new one, record will be valid.
 
+Validate php upload errors:
+PHP: Error Messages Explained - Manual (http://www.php.net/manual/features.file-upload.errors.php)
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'checkIniSizeError' => array(
+			'rule' => array('phpUploadError', UPLOAD_ERR_INI_SIZE),
+			'message' => 'The uploaded file exceeds the upload_max_filesize directive in php.ini'
+		),
+		'checkSizesError' => array(
+			'rule' => array('phpUploadError', array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE)),
+			'message' => 'The uploaded file exceeds the upload_max_filesize directive in php.ini or MAX_FILE_SIZE directive that was specified in the HTML form'
+		),
+		'checkAllError' => array(
+			'rule' => array('phpUploadError'),
+			'message' => 'Can\'t upload'
+		)
+	)
+);
+</code></pre>
+
 h4. You can change the path where the files are saved
 
 <pre><code>var $actsAs = array(
