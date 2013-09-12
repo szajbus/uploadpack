@@ -434,4 +434,15 @@ class UploadBehavior extends ModelBehavior {
         }
         return false;
     }
+
+    public function phpUploadError(Model $model, $value, $uploadErrors = array('UPLOAD_ERR_INI_SIZE', 'UPLOAD_ERR_FORM_SIZE', 'UPLOAD_ERR_PARTIAL', 'UPLOAD_ERR_NO_FILE', 'UPLOAD_ERR_NO_TMP_DIR', 'UPLOAD_ERR_CANT_WRITE', 'UPLOAD_ERR_EXTENSION')) {
+        $value = array_shift($value);
+        if (!is_array($uploadErrors)) {
+            $uploadErrors = array($uploadErrors);
+        }
+        if (!empty($value['error'])) {
+            return !in_array($value['error'], $uploadErrors);
+        }
+        return true;
+    }
 }
