@@ -325,7 +325,7 @@ class UploadBehavior extends ModelBehavior {
         return false;
     }
 
-    public function attachmentMinSize(&$model, $value, $min) {
+    public function attachmentMinSize(Model $model, $value, $min) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$min <= (int)$value['size'];
@@ -333,7 +333,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentMaxSize(&$model, $value, $max) {
+    public function attachmentMaxSize(Model $model, $value, $max) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$value['size'] <= (int)$max;
@@ -341,7 +341,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentContentType(&$model, $value, $contentTypes) {
+    public function attachmentContentType(Model $model, $value, $contentTypes) {
         $value = array_shift($value);
         if (!is_array($contentTypes)) {
             $contentTypes = array($contentTypes);
@@ -361,7 +361,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentPresence(&$model, $value) {
+    public function attachmentPresence(Model $model, $value) {
         $keys = array_keys($value);
         $field = $keys[0];
         $value = array_shift($value);
@@ -382,15 +382,15 @@ class UploadBehavior extends ModelBehavior {
         }
         return false;
     }
-    public function minWidth(&$model, $value, $minWidth) {
+    public function minWidth(Model $model, $value, $minWidth) {
         return $this->_validateDimension($value, 'min', 'x', $minWidth);
     }
 
-    public function minHeight(&$model, $value, $minHeight) {
+    public function minHeight(Model $model, $value, $minHeight) {
         return $this->_validateDimension($value, 'min', 'y', $minHeight);
     }
 
-    public function maxWidth(&$model, $value, $maxWidth) {
+    public function maxWidth(Model $model, $value, $maxWidth) {
         $keys = array_keys($value);
         $field = $keys[0];
         $settings = self::$__settings[$model->name][$field];
@@ -402,7 +402,7 @@ class UploadBehavior extends ModelBehavior {
         }
     }
 
-    public function maxHeight(&$model, $value, $maxHeight) {
+    public function maxHeight(Model $model, $value, $maxHeight) {
         return $this->_validateDimension($value, 'max', 'y', $maxHeight);
     }
 
