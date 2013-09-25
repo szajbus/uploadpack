@@ -266,6 +266,19 @@ The jpeg quality can be set with the <code>quality</code> setting.
 );
 </code></pre>
 
+h4. Alpha Channel(PNG, GIF only)
+
+The png and gif can use alpha channel <code>alpha</code> setting.
+
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'alpha' => true
+		)
+	)
+);
+</code></pre>
+
 h4. You can choose another field for an external url
 
 <pre><code>var $actsAs = array(
