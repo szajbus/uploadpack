@@ -27,7 +27,8 @@ class UploadBehavior extends ModelBehavior {
             'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
             'styles' => array(),
             'resizeToMaxWidth' => false,
-            'quality' => 75
+            'quality' => 75,
+            'alpha' => false
         );
 
         foreach ($settings as $field => $array) {
@@ -135,11 +136,11 @@ class UploadBehavior extends ModelBehavior {
                     $move = !empty($toWrite['remote']) ? 'rename' : 'move_uploaded_file';
                     if (@$move($toWrite['tmp_name'], $settings['path'])) {
                         if($this->maxWidthSize) {
-                            $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality']);
+                            $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality'], $settings['alpha']);
                         }
                         foreach ($settings['styles'] as $style => $geometry) {
                             $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
-                            $this->_resize($settings['path'], $newSettings['path'], $geometry, $settings['quality']);
+                            $this->_resize($settings['path'], $newSettings['path'], $geometry, $settings['quality'], $settings['alpha']);
                         }
                     }
                 }
@@ -235,7 +236,7 @@ class UploadBehavior extends ModelBehavior {
         return $pathinfo;
     }
 
-    private function _resize($srcFile, $destFile, $geometry, $quality = 75) {
+    private function _resize($srcFile, $destFile, $geometry, $quality = 75, $alpha = false) {
         copy($srcFile, $destFile);
         @chmod($destFile, 0777);
         $pathinfo = UploadBehavior::_pathinfo($srcFile);
@@ -317,7 +318,24 @@ class UploadBehavior extends ModelBehavior {
             }
 
             $img = imagecreatetruecolor($destW, $destH);
-            imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+            if ($alpha === true) {
+                switch (strtolower($pathinfo['extension'])) {
+                case 'gif':
+                    $alphaColor = imagecolortransparent($src);
+                    imagefill($img, 0, 0, $alphaColor);
+                    imagecolortransparent($img, $alphaColor);
+                    break;
+                case 'png':
+                    imagealphablending($img, false);
+                    imagesavealpha($img, true);
+                    break;
+                default:
+                    imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+                    break;
+                }
+            } else {
+                imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+            }
             imagecopyresampled($img, $src, ($destW-$resizeW)/2, ($destH-$resizeH)/2, 0, 0, $resizeW, $resizeH, $srcW, $srcH);
             $outputHandler($img, $destFile, $quality);
             return true;
