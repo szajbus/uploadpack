@@ -89,10 +89,10 @@ class UsersController extends AppController {
 Let's create @users/show.ctp@ view to see the results. Note that we've included UploadHelper in controller's $helpers.
 
 <pre><code>That would be the original file:
-<?php echo $upload->image($user, 'User.avatar') ?>
+<?php echo $this->Upload->uploadImage($user, 'User.avatar') ?>
 
 And now it's thumbnail:
-<?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')) ?>
+<?php echo $this->Upload->uploadImage($user, 'User.avatar', array('style' => 'thumb')) ?>
 </code></pre>
 
 That's how you create new records with uploaded files. Updating existing record would delete a file attached to it from disk.
@@ -294,8 +294,7 @@ This way the user can paste an url or choose a file from their filesystem. The u
 
 h4. Deleting a file attached to field
 
-<pre><code>
-	$model->data['avatar'] = null;
+<pre><code>$model->data['avatar'] = null;
 	$model->save();
 </code></pre>
 
@@ -308,7 +307,7 @@ Styles are the definition of thumbnails that will be generated for original imag
 		'avatar' => array(
 			'styles' => array(
 				'big' => '200x200',
-				'small' => '120x120'
+				'small' => '120x120',
 				'thumb' => '80x80'
 			)
 		)
@@ -372,7 +371,7 @@ Returns image tag pointing to uploaded file.
 
 Assuming that you have read a user from database and it's available in @$user@ variable in view.
 
-<pre><code><?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')); ?></code></pre>
+<pre><code><?php echo $this->Upload->uploadImage($user, 'User.avatar', array('style' => 'thumb')); ?></code></pre>
 
 When you fetch user from database you would usually get:
 
@@ -402,7 +401,7 @@ But when the user is fetched as one of many users associated by hasMany associat
 
 Then you should do:
 
-<pre><code><?php echo $upload->image($data['User'][0], 'User.avatar', array('style' => 'thumb')) ?></code></pre>
+<pre><code><?php echo $this->Upload->uploadImage($data['User'][0], 'User.avatar', array('style' => 'thumb')) ?></code></pre>
 
 The helper is smart enough to figure out the structure of data you pass to it.
 
