@@ -36,7 +36,7 @@ class UploadBehavior extends ModelBehavior {
         }
     }
 
-    public function beforeSave(Model $model) {
+    public function beforeSave(Model $model, $options = array()) {
         $this->_reset();
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && file_exists($model->data[$model->name][$field]['tmp_name'])) {
@@ -61,7 +61,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function afterSave(Model $model, $create) {
+    public function afterSave(Model $model, $create, $options = array()) {
         if (!$create) {
             $this->_deleteFiles($model);
         }
@@ -78,7 +78,7 @@ class UploadBehavior extends ModelBehavior {
         $this->_deleteFiles($model);
     }
 
-    public function beforeValidate(Model $model) {
+    public function beforeValidate(Model $model, $options = array()) {
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (isset($model->data[$model->name][$field])) {
                 $data = $model->data[$model->name][$field];
