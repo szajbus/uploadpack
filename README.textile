@@ -1,6 +1,6 @@
 h1. UploadPack
 
-"*Using it in production? Share some love :)*":https://www.pledgie.com/campaigns/7880
+"!https://pledgie.com/campaigns/7880.png?skin_name=chrome!(Using it in production? Share some love...)":https://www.pledgie.com/campaigns/7880
 
 UploadPack is a plugin that makes file uploads in CakePHP as easy as possible. It works with almost no configuration, but if you need more flexibility you can easily override default settings.
 
