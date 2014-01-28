@@ -1,5 +1,7 @@
 h1. UploadPack
 
+"!https://pledgie.com/campaigns/7880.png?skin_name=chrome!(Using it in production? Share some love...)":https://www.pledgie.com/campaigns/7880
+
 UploadPack is a plugin that makes file uploads in CakePHP as easy as possible. It works with almost no configuration, but if you need more flexibility you can easily override default settings.
 
 What's included:
@@ -89,10 +91,10 @@ class UsersController extends AppController {
 Let's create @users/show.ctp@ view to see the results. Note that we've included UploadHelper in controller's $helpers.
 
 <pre><code>That would be the original file:
-<?php echo $upload->image($user, 'User.avatar') ?>
+<?php echo $this->Upload->uploadImage($user, 'User.avatar') ?>
 
 And now it's thumbnail:
-<?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')) ?>
+<?php echo $this->Upload->uploadImage($user, 'User.avatar', array('style' => 'thumb')) ?>
 </code></pre>
 
 That's how you create new records with uploaded files. Updating existing record would delete a file attached to it from disk.
@@ -176,6 +178,26 @@ Validate image size:
 
 If you're editing a record that already has avatar attached and you don't supply a new one, record will be valid.
 
+Validate php upload errors:
+PHP: Error Messages Explained - Manual (http://www.php.net/manual/features.file-upload.errors.php)
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'checkIniSizeError' => array(
+			'rule' => array('phpUploadError', UPLOAD_ERR_INI_SIZE),
+			'message' => 'The uploaded file exceeds the upload_max_filesize directive in php.ini'
+		),
+		'checkSizesError' => array(
+			'rule' => array('phpUploadError', array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE)),
+			'message' => 'The uploaded file exceeds the upload_max_filesize directive in php.ini or MAX_FILE_SIZE directive that was specified in the HTML form'
+		),
+		'checkAllError' => array(
+			'rule' => array('phpUploadError'),
+			'message' => 'Can\'t upload'
+		)
+	)
+);
+</code></pre>
+
 h4. You can change the path where the files are saved
 
 <pre><code>var $actsAs = array(
@@ -246,6 +268,19 @@ The jpeg quality can be set with the <code>quality</code> setting.
 );
 </code></pre>
 
+h4. Alpha Channel(PNG, GIF only)
+
+The png and gif can use alpha channel <code>alpha</code> setting.
+
+<pre><code>var $actsAs = array(
+	'UploadPack.Upload' => array(
+		'avatar' => array(
+			'alpha' => true
+		)
+	)
+);
+</code></pre>
+
 h4. You can choose another field for an external url
 
 <pre><code>var $actsAs = array(
@@ -261,8 +296,7 @@ This way the user can paste an url or choose a file from their filesystem. The u
 
 h4. Deleting a file attached to field
 
-<pre><code>
-	$model->data['avatar'] = null;
+<pre><code>$model->data['avatar'] = null;
 	$model->save();
 </code></pre>
 
@@ -275,7 +309,7 @@ Styles are the definition of thumbnails that will be generated for original imag
 		'avatar' => array(
 			'styles' => array(
 				'big' => '200x200',
-				'small' => '120x120'
+				'small' => '120x120',
 				'thumb' => '80x80'
 			)
 		)
@@ -316,7 +350,7 @@ h3. Using the helper
 
 There are two methods of UploadHelper you can use:
 
-h4. UploadHelper::url($data, $field, $options = array())
+h4. UploadHelper::uploadUrl($data, $field, $options = array())
 
 Returns url to the uploaded file
 
@@ -326,7 +360,7 @@ Returns url to the uploaded file
 ** *'style'* - name of a thumbnail's style
 ** *'urlize'* - if true returned url is wrapped with @$html->url()@
 
-h4. UploadHelper::image($data, $field, $options = array(), $htmlOptions = array())
+h4. UploadHelper::uploadImage($data, $field, $options = array(), $htmlOptions = array())
 
 Returns image tag pointing to uploaded file.
 
@@ -339,7 +373,7 @@ Returns image tag pointing to uploaded file.
 
 Assuming that you have read a user from database and it's available in @$user@ variable in view.
 
-<pre><code><?php echo $upload->image($user, 'User.avatar', array('style' => 'thumb')); ?></code></pre>
+<pre><code><?php echo $this->Upload->uploadImage($user, 'User.avatar', array('style' => 'thumb')); ?></code></pre>
 
 When you fetch user from database you would usually get:
 
@@ -369,7 +403,7 @@ But when the user is fetched as one of many users associated by hasMany associat
 
 Then you should do:
 
-<pre><code><?php echo $upload->image($data['User'][0], 'User.avatar', array('style' => 'thumb')) ?></code></pre>
+<pre><code><?php echo $this->Upload->uploadImage($data['User'][0], 'User.avatar', array('style' => 'thumb')) ?></code></pre>
 
 The helper is smart enough to figure out the structure of data you pass to it.
 

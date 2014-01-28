@@ -14,19 +14,19 @@ class UploadHelper extends AppHelper {
 
     public $helpers = array('Html');
 
-    public function image($data, $path, $options = array(), $htmlOptions = array())
+    public function uploadImage($data, $path, $options = array(), $htmlOptions = array())
     {
         $options += array('urlize' => false);
-        return $this->output($this->Html->image($this->url($data, $path, $options), $htmlOptions));
+        return $this->output($this->Html->image($this->uploadUrl($data, $path, $options), $htmlOptions));
     }
 
-    public function link($title, $data, $field, $options = array(), $htmlOptions = array())
+    public function uploadLink($title, $data, $field, $urlOptions = array(), $htmlOptions = array())
     {
-        $options += array('style' => 'original', 'urlize' => false);
-        return $this->Html->link($title, $this->url($data, $field, $options), $htmlOptions);
+        $urlOptions += array('style' => 'original', 'urlize' => true);
+        return $this->Html->link($title, $this->uploadUrl($data, $field, $urlOptions), $htmlOptions);
     }
 
-    public function url($data, $field, $options = array())
+    public function uploadUrl($data, $field, $options = array())
     {
         $options += array('style' => 'original', 'urlize' => true);
         list($model, $field) = explode('.', $field);

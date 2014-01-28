@@ -22,15 +22,16 @@ class UploadBehavior extends ModelBehavior {
 
     private $maxWidthSize = false;
 
-    public function setup(&$model, $settings = array()) {
+    public function setup(Model $model, $settings = array()) {
         $defaults = array(
             'gsPath' => "gs",
             'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
             'styles' => array(),
             'resizeToMaxWidth' => false,
             'quality' => 75,
-            'PDFtoImage' => false,
             'dpi' => 72,
+            'PDFtoImage' => false,
+            'alpha' => false
         );
 
         foreach ($settings as $field => $array) {
@@ -38,7 +39,7 @@ class UploadBehavior extends ModelBehavior {
         }
     }
 
-    public function beforeSave(&$model) {
+    public function beforeSave(Model $model, $options = array()) {
         $this->_reset();
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (!empty($model->data[$model->name][$field]) && is_array($model->data[$model->name][$field]) && file_exists($model->data[$model->name][$field]['tmp_name'])) {
@@ -63,24 +64,24 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function afterSave(&$model, $create) {
+    public function afterSave(Model $model, $create, $options = array()) {
         if (!$create) {
             $this->_deleteFiles($model);
         }
         $this->_writeFiles($model);
     }
 
-    public function beforeDelete(&$model) {
+    public function beforeDelete(Model $model, $cascade = true) {
         $this->_reset();
         $this->_prepareToDeleteFiles($model);
         return true;
     }
 
-    public function afterDelete(&$model) {
+    public function afterDelete(Model $model) {
         $this->_deleteFiles($model);
     }
 
-    public function beforeValidate(&$model) {
+    public function beforeValidate(Model $model, $options = array()) {
         foreach (self::$__settings[$model->name] as $field => $settings) {
             if (isset($model->data[$model->name][$field])) {
                 $data = $model->data[$model->name][$field];
@@ -140,11 +141,11 @@ class UploadBehavior extends ModelBehavior {
                         self::_convertPDFtoImageIfPDF($settings, $toWrite);
 
                         if($this->maxWidthSize) {
-                            $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality']);
+                            $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality'], $settings['alpha']);
                         }
                         foreach ($settings['styles'] as $style => $geometry) {
                             $newSettings = $this->_interpolate($model, $field, $toWrite['name'], $style);
-                            $this->_resize($settings['path'], $newSettings['path'], $geometry, $settings['quality']);
+                            $this->_resize($settings['path'], $newSettings['path'], $geometry, $settings['quality'], $settings['alpha']);
                         }
                     }
                 }
@@ -240,7 +241,7 @@ class UploadBehavior extends ModelBehavior {
         return $pathinfo;
     }
 
-    private function _resize($srcFile, $destFile, $geometry, $quality = 75) {
+    private function _resize($srcFile, $destFile, $geometry, $quality = 75, $alpha = false) {
         copy($srcFile, $destFile);
         @chmod($destFile, 0777);
         $pathinfo = UploadBehavior::_pathinfo($srcFile);
@@ -322,7 +323,24 @@ class UploadBehavior extends ModelBehavior {
             }
 
             $img = imagecreatetruecolor($destW, $destH);
-            imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+            if ($alpha === true) {
+                switch (strtolower($pathinfo['extension'])) {
+                case 'gif':
+                    $alphaColor = imagecolortransparent($src);
+                    imagefill($img, 0, 0, $alphaColor);
+                    imagecolortransparent($img, $alphaColor);
+                    break;
+                case 'png':
+                    imagealphablending($img, false);
+                    imagesavealpha($img, true);
+                    break;
+                default:
+                    imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+                    break;
+                }
+            } else {
+                imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+            }
             imagecopyresampled($img, $src, ($destW-$resizeW)/2, ($destH-$resizeH)/2, 0, 0, $resizeW, $resizeH, $srcW, $srcH);
             $outputHandler($img, $destFile, $quality);
             return true;
@@ -330,7 +348,7 @@ class UploadBehavior extends ModelBehavior {
         return false;
     }
 
-    public function attachmentMinSize(&$model, $value, $min) {
+    public function attachmentMinSize(Model $model, $value, $min) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$min <= (int)$value['size'];
@@ -338,7 +356,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentMaxSize(&$model, $value, $max) {
+    public function attachmentMaxSize(Model $model, $value, $max) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$value['size'] <= (int)$max;
@@ -346,7 +364,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentContentType(&$model, $value, $contentTypes) {
+    public function attachmentContentType(Model $model, $value, $contentTypes) {
         $value = array_shift($value);
         if (!is_array($contentTypes)) {
             $contentTypes = array($contentTypes);
@@ -366,7 +384,7 @@ class UploadBehavior extends ModelBehavior {
         return true;
     }
 
-    public function attachmentPresence(&$model, $value) {
+    public function attachmentPresence(Model $model, $value) {
         $keys = array_keys($value);
         $field = $keys[0];
         $value = array_shift($value);
@@ -387,15 +405,15 @@ class UploadBehavior extends ModelBehavior {
         }
         return false;
     }
-    public function minWidth(&$model, $value, $minWidth) {
+    public function minWidth(Model $model, $value, $minWidth) {
         return $this->_validateDimension($value, 'min', 'x', $minWidth);
     }
 
-    public function minHeight(&$model, $value, $minHeight) {
+    public function minHeight(Model $model, $value, $minHeight) {
         return $this->_validateDimension($value, 'min', 'y', $minHeight);
     }
 
-    public function maxWidth(&$model, $value, $maxWidth) {
+    public function maxWidth(Model $model, $value, $maxWidth) {
         $keys = array_keys($value);
         $field = $keys[0];
         $settings = self::$__settings[$model->name][$field];
@@ -407,7 +425,7 @@ class UploadBehavior extends ModelBehavior {
         }
     }
 
-    public function maxHeight(&$model, $value, $maxHeight) {
+    public function maxHeight(Model $model, $value, $maxHeight) {
         return $this->_validateDimension($value, 'max', 'y', $maxHeight);
     }
 
@@ -482,6 +500,17 @@ class UploadBehavior extends ModelBehavior {
         set_time_limit(900); // 15min
         exec("{$gsPath} -q -dSAFER -dBATCH -dNOPAUSE -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sDEVICE={$deviceType} -r{$dpi} -dJPEGQ={$quality} -sOutputFile={$destFile} {$srcFile}", $arr);
 
+        return true;
+    }
+
+    public function phpUploadError(Model $model, $value, $uploadErrors = array('UPLOAD_ERR_INI_SIZE', 'UPLOAD_ERR_FORM_SIZE', 'UPLOAD_ERR_PARTIAL', 'UPLOAD_ERR_NO_FILE', 'UPLOAD_ERR_NO_TMP_DIR', 'UPLOAD_ERR_CANT_WRITE', 'UPLOAD_ERR_EXTENSION')) {
+        $value = array_shift($value);
+        if (!is_array($uploadErrors)) {
+            $uploadErrors = array($uploadErrors);
+        }
+        if (!empty($value['error'])) {
+            return !in_array($value['error'], $uploadErrors);
+        }
         return true;
     }
 }
