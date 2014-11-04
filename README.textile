@@ -113,11 +113,11 @@ Validate attachment's size:
 	'avatar' => array(
 		'maxSize' => array(
 			'rule' => array('attachmentMaxSize', 1048576),
-			'message' => 'Avatar can't be larger than 1MB'
+			'message' => 'Avatar can\'t be larger than 1MB'
 		),
 		'minSize' => array(
 			'rule' => array('attachmentMinSize', 1024),
-			'message' => 'Avatar can't be smaller than 1KB'
+			'message' => 'Avatar can\'t be smaller than 1KB'
 		)
 	)
 );
