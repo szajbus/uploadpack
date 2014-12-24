@@ -50,6 +50,12 @@ class UploadHelper extends AppHelper {
         if(isset($id) && !empty($filename))
         {
             $settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
+            // change output filename's ext
+            if(isset($settings['PDFtoImage'])) {
+                $imageFileType = $settings['PDFtoImage'];
+                $filename = preg_replace('/\.pdf$/', ".$imageFileType", $filename);
+            }
+            $settings = UploadBehavior::interpolate($model, $id, $field, $filename, $options['style'], array('webroot' => ''));
             $url = isset($settings['url']) ? $settings['url'] : $settings['path'];
         }
         else

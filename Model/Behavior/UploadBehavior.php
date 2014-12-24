@@ -24,10 +24,13 @@ class UploadBehavior extends ModelBehavior {
 
     public function setup(Model $model, $settings = array()) {
         $defaults = array(
+            'gsPath' => "gs",
             'path' => ':webroot/upload/:model/:id/:basename_:style.:extension',
             'styles' => array(),
             'resizeToMaxWidth' => false,
             'quality' => 75,
+            'dpi' => 72,
+            'PDFtoImage' => false,
             'alpha' => false
         );
 
@@ -139,6 +142,7 @@ class UploadBehavior extends ModelBehavior {
                 if (is_dir($destDir) && is_writable($destDir)) {
                     $move = !empty($toWrite['remote']) ? 'rename' : 'move_uploaded_file';
                     if (@$move($toWrite['tmp_name'], $settings['path'])) {
+                        self::_convertPDFtoImageIfPDF($settings, $toWrite);
                         $this->afterMove($settings['path']);  // <==== Calling afterMove() callback method
                         if($this->maxWidthSize) {
                             $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality'], $settings['alpha']);
@@ -456,6 +460,51 @@ class UploadBehavior extends ModelBehavior {
             }
         }
         return false;
+    }
+
+    private function _convertPDFtoImageIfPDF( &$settings, &$toWrite ) {
+        $srcFile = $settings['path'];
+        $pdfToImage = $settings['PDFtoImage'];
+
+        // pdfToImage: (jpg|png)
+        // destFile ex: example_thumb.pdf -> example_thum.jpg
+        $pattern = '/\.pdf$/i';
+        $destFile = preg_replace($pattern, ".$pdfToImage", $srcFile);
+        $destFilename = preg_replace($pattern, ".$pdfToImage", $toWrite['name']);
+
+        $pathinfo = UploadBehavior::_pathinfo($srcFile);
+
+        if (isset($pdfToImage) && preg_match('/(jpg|png)/', $pdfToImage) &&
+            strtolower($pathinfo['extension']) === 'pdf') {
+            $result = $this->_convertPDFtoImage($srcFile, $destFile, $settings);
+            if ($result) {
+                // change original file to image file
+                $settings['path'] = $destFile;
+                $toWrite['name'] = $destFilename;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function _convertPDFtoImage($srcFile, $destFile, $settings) {
+        $gsPath        = $settings['gsPath'];
+        $imageFileType = $settings['PDFtoImage'];
+        $dpi           = $settings['dpi'];
+        $quality       = $settings['quality'];
+
+        if ( $imageFileType == 'jpg' ) {
+            $deviceType = 'jpeg';
+        }
+        else {
+            $deviceType = $imageFileType;
+        }
+        set_time_limit(900); // 15min
+        exec("{$gsPath} -q -dSAFER -dBATCH -dNOPAUSE -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sDEVICE={$deviceType} -r{$dpi} -dJPEGQ={$quality} -sOutputFile={$destFile} {$srcFile}", $arr);
+
+        return true;
     }
 
     public function phpUploadError(Model $model, $value, $uploadErrors = array('UPLOAD_ERR_INI_SIZE', 'UPLOAD_ERR_FORM_SIZE', 'UPLOAD_ERR_PARTIAL', 'UPLOAD_ERR_NO_FILE', 'UPLOAD_ERR_NO_TMP_DIR', 'UPLOAD_ERR_CANT_WRITE', 'UPLOAD_ERR_EXTENSION')) {
