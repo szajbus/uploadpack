@@ -126,6 +126,10 @@ class UploadBehavior extends ModelBehavior {
             substr($this->toWrite[$field]['name'], strrpos($this->toWrite[$field]['name'], '.')); // extension
     }
 
+    protected function afterMove($file) {
+        // do nothing here
+    }
+
     private function _writeFiles(&$model) {
         if (!empty($this->toWrite)) {
             foreach ($this->toWrite as $field => $toWrite) {
@@ -139,7 +143,7 @@ class UploadBehavior extends ModelBehavior {
                     $move = !empty($toWrite['remote']) ? 'rename' : 'move_uploaded_file';
                     if (@$move($toWrite['tmp_name'], $settings['path'])) {
                         self::_convertPDFtoImageIfPDF($settings, $toWrite);
-
+                        $this->afterMove($settings['path']);  // <==== Calling afterMove() callback method
                         if($this->maxWidthSize) {
                             $this->_resize($settings['path'], $settings['path'], $this->maxWidthSize.'w', $settings['quality'], $settings['alpha']);
                         }
