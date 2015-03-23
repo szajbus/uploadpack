@@ -198,6 +198,20 @@ PHP: Error Messages Explained - Manual (http://www.php.net/manual/features.file-
 );
 </code></pre>
 
+Validate options:
+Validation function except "attachmentPresence" support the "allowEmpty" option.
+Return value if you do not specify "allowEmpty" option should be careful because different by validation function.
+
+The example below return true if there is no upload files or jpeg.
+<pre><code>var $validate = array(
+	'avatar' => array(
+		'rule' => array('attachmentContentType', 'image/jpeg'),
+		'message' => 'Only jpegs please',
+		'allowEmpty' => true
+	)
+);
+</code></pre>
+
 h4. You can change the path where the files are saved
 
 <pre><code>var $actsAs = array(

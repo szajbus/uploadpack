@@ -348,23 +348,27 @@ class UploadBehavior extends ModelBehavior {
         return false;
     }
 
-    public function attachmentMinSize(Model $model, $value, $min) {
+    public function attachmentMinSize(Model $model, $value, $min, $options = array()) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$min <= (int)$value['size'];
+        } else if (isset($options['allowEmpty']) && $options['allowEmpty'] === false) {
+          return false;
         }
         return true;
     }
 
-    public function attachmentMaxSize(Model $model, $value, $max) {
+    public function attachmentMaxSize(Model $model, $value, $max, $options = array()) {
         $value = array_shift($value);
         if (!empty($value['tmp_name'])) {
             return (int)$value['size'] <= (int)$max;
+        } else if (isset($options['allowEmpty']) && $options['allowEmpty'] === false) {
+          return false;
         }
         return true;
     }
 
-    public function attachmentContentType(Model $model, $value, $contentTypes) {
+    public function attachmentContentType(Model $model, $value, $contentTypes, $options = array()) {
         $value = array_shift($value);
         if (!is_array($contentTypes)) {
             $contentTypes = array($contentTypes);
@@ -380,11 +384,13 @@ class UploadBehavior extends ModelBehavior {
                 }
             }
             return false;
+        } else if (isset($options['allowEmpty']) && $options['allowEmpty'] === false) {
+          return false;
         }
         return true;
     }
 
-    public function attachmentPresence(Model $model, $value) {
+    public function attachmentPresence(Model $model, $value, $options = array()) {
         $keys = array_keys($value);
         $field = $keys[0];
         $value = array_shift($value);
@@ -405,31 +411,32 @@ class UploadBehavior extends ModelBehavior {
         }
         return false;
     }
-    public function minWidth(Model $model, $value, $minWidth) {
-        return $this->_validateDimension($value, 'min', 'x', $minWidth);
+
+    public function minWidth(Model $model, $value, $minWidth, $options = array()) {
+        return $this->_validateDimension($value, 'min', 'x', $minWidth, $options);
     }
 
-    public function minHeight(Model $model, $value, $minHeight) {
-        return $this->_validateDimension($value, 'min', 'y', $minHeight);
+    public function minHeight(Model $model, $value, $minHeight, $options = array()) {
+        return $this->_validateDimension($value, 'min', 'y', $minHeight, $options);
     }
 
-    public function maxWidth(Model $model, $value, $maxWidth) {
+    public function maxWidth(Model $model, $value, $maxWidth, $options = array()) {
         $keys = array_keys($value);
         $field = $keys[0];
         $settings = self::$__settings[$model->name][$field];
-        if($settings['resizeToMaxWidth'] && !$this->_validateDimension($value, 'max', 'x', $maxWidth)) {
+        if($settings['resizeToMaxWidth'] && !$this->_validateDimension($value, 'max', 'x', $maxWidth, $options)) {
             $this->maxWidthSize = $maxWidth;
             return true;
         } else {
-            return $this->_validateDimension($value, 'max', 'x', $maxWidth);
+            return $this->_validateDimension($value, 'max', 'x', $maxWidth, $options);
         }
     }
 
-    public function maxHeight(Model $model, $value, $maxHeight) {
-        return $this->_validateDimension($value, 'max', 'y', $maxHeight);
+    public function maxHeight(Model $model, $value, $maxHeight, $options = array()) {
+        return $this->_validateDimension($value, 'max', 'y', $maxHeight, $options);
     }
 
-    private function _validateDimension($upload, $mode, $axis, $value) {
+    private function _validateDimension($upload, $mode, $axis, $value, $options) {
         $upload = array_shift($upload);
         $func = 'images'.$axis;
         if(!empty($upload['tmp_name'])) {
@@ -454,17 +461,21 @@ class UploadBehavior extends ModelBehavior {
                     break;
                 }
             }
+        } else if (isset($options['allowEmpty']) && $options['allowEmpty'] === true) {
+            return true;
         }
         return false;
     }
 
-    public function phpUploadError(Model $model, $value, $uploadErrors = array('UPLOAD_ERR_INI_SIZE', 'UPLOAD_ERR_FORM_SIZE', 'UPLOAD_ERR_PARTIAL', 'UPLOAD_ERR_NO_FILE', 'UPLOAD_ERR_NO_TMP_DIR', 'UPLOAD_ERR_CANT_WRITE', 'UPLOAD_ERR_EXTENSION')) {
+    public function phpUploadError(Model $model, $value, $uploadErrors = array('UPLOAD_ERR_INI_SIZE', 'UPLOAD_ERR_FORM_SIZE', 'UPLOAD_ERR_PARTIAL', 'UPLOAD_ERR_NO_FILE', 'UPLOAD_ERR_NO_TMP_DIR', 'UPLOAD_ERR_CANT_WRITE', 'UPLOAD_ERR_EXTENSION'), $options = array()) {
         $value = array_shift($value);
         if (!is_array($uploadErrors)) {
             $uploadErrors = array($uploadErrors);
         }
         if (!empty($value['error'])) {
             return !in_array($value['error'], $uploadErrors);
+        } else if (isset($options['allowEmpty']) && $options['allowEmpty'] === false) {
+            return false;
         }
         return true;
     }
