@@ -198,9 +198,11 @@ PHP: Error Messages Explained - Manual (http://www.php.net/manual/features.file-
 );
 </code></pre>
 
-Validate options:
-Validation function except "attachmentPresence" support the "allowEmpty" option.
-Return value if you do not specify "allowEmpty" option should be careful because different by validation function.
+Validation options:
+
+You can pass additional options to validation rules:
+
+* *allowEmpty* - if set to _false_ will cause validation to fail if the file is not present. This option is not available for _attachmentPresence_ rule.
 
 The example below return true if there is no upload files or jpeg.
 <pre><code>var $validate = array(
