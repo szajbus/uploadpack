@@ -101,15 +101,19 @@ class UploadBehavior extends ModelBehavior {
     }
 
     private function _fetchFromUrl($url) {
+        $path_chunks = explode('/', $url);
+        $filename_chunks = explode('.', $url)
+        
         $data = array('remote' => true);
-        $data['name'] = end(explode('/', $url));
-        $data['tmp_name'] = tempnam(sys_get_temp_dir(), $data['name']) . '.' . end(explode('.', $url));
+        $data['name'] = end($path_chunks);
+        $data['tmp_name'] = tempnam(sys_get_temp_dir(), $data['name']) . '.' . end($filename_chunks);
 
         $httpSocket = new HttpSocket();
         $raw = $httpSocket->get($url);
         $response = $httpSocket->response;
+        $content_types = explode(';', $response['header']['Content-Type'])
         $data['size'] = strlen($raw);
-        $data['type'] = reset(explode(';', $response['header']['Content-Type']));
+        $data['type'] = reset($content_types);
 
         file_put_contents($data['tmp_name'], $raw);
         return $data;
