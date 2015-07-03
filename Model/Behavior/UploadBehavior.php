@@ -102,7 +102,7 @@ class UploadBehavior extends ModelBehavior {
 
     private function _fetchFromUrl($url) {
         $path_chunks = explode('/', $url);
-        $filename_chunks = explode('.', $url)
+        $filename_chunks = explode('.', $url);
         
         $data = array('remote' => true);
         $data['name'] = end($path_chunks);
@@ -111,7 +111,7 @@ class UploadBehavior extends ModelBehavior {
         $httpSocket = new HttpSocket();
         $raw = $httpSocket->get($url);
         $response = $httpSocket->response;
-        $content_types = explode(';', $response['header']['Content-Type'])
+        $content_types = explode(';', $response['header']['Content-Type']);
         $data['size'] = strlen($raw);
         $data['type'] = reset($content_types);
 
