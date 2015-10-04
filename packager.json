@@ -1,0 +1,25 @@
+{
+    "name": "szajbus/uploadpack",
+    "description": "Easy way to handle file uploads in CakePHP",
+    "type": "library",
+    "keywords": ["upload", "cakephp", "image processing"],
+    "homepage": "https://github.com/szajbus/uploadpack",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michał Szajbe",
+            "email": "michal.szajbe@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/szajbus/uploadpack/issues",
+        "source": "https://github.com/szajbus/uploadpack"
+    },
+    "require": {
+        "cakephp/cakephp": ">=1.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*",
+        "cakephp/cakephp-codesniffer": "dev-master"
+    }
+}
