@@ -2,7 +2,7 @@
     "name": "szajbus/uploadpack",
     "description": "Easy way to handle file uploads in CakePHP",
     "version": "0.7.2",
-    "type": "library",
+    "type": "cakephp-plugin",
     "keywords": ["upload", "cakephp", "image processing"],
     "homepage": "https://github.com/szajbus/uploadpack",
     "license": "MIT",
