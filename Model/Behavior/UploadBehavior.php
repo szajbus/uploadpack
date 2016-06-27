@@ -256,6 +256,7 @@ class UploadBehavior extends ModelBehavior {
         case 'gif':
             $createHandler = 'imagecreatefromgif';
             $outputHandler = 'imagegif';
+            $quality = null;
             break;
         case 'jpg':
         case 'jpeg':
@@ -265,7 +266,11 @@ class UploadBehavior extends ModelBehavior {
         case 'png':
             $createHandler = 'imagecreatefrompng';
             $outputHandler = 'imagepng';
-            $quality = null;
+            // *** Scale quality from 0-100 to 0-9
+            $scaleQuality = round(($quality / 100) * 9);
+            // *** Invert quality setting as 0 is best, not 9
+            $invertScaleQuality = 9 - $scaleQuality;
+            $quality = $invertScaleQuality;
             break;
         default:
             return false;
